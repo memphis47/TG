@@ -1,0 +1,3459 @@
+24a25
+> USE std.textio.all;
+29a31
+>   generic (coreNumber: integer := 0);
+32a35,36
+>     clk4x  : in    std_logic;
+>     phi0   : in    std_logic;
+48a53,58
+> 
+>   -- xilinx attributes
+>   -- attribute CLOCK_SIGNAL of clk,clk4x : signal is "yes";
+>   -- attribute CLOCK_SIGNAL of phi0,phi1,phi2,phi3 : signal is "no";
+>   -- attribute CLOCK_SIGNAL of i_aVal,i_wait,d_aVal,d_wait,wr : signal is "no";
+> 
+52a63,307
+> -- fields of the control table
+> --    aVal:  std_logic;        -- addressValid, enable data-mem=0
+> --    wmem:  std_logic;        -- READ=1/WRITE=0 in/to memory
+> --    i:     instr_type;       -- instruction
+> --    wreg:  std_logic;        -- register write=0
+> --    selB:  std_logic;        -- B ALU input, reg=0 ext=1
+> --    fun:   std_logic;        -- check function_field=1
+> --    oper:  t_alu_fun;        -- ALU operation
+> --    muxC:  reg3;             -- select result mem=0 ula=1 jr=2 pc+8=3
+> --    c_sel: reg2;             -- select destination reg RD=0 RT=1 31=2
+> --    extS:  std_logic;        -- sign-extend=1, zero-ext=0
+> --    PCsel: reg2;             -- PCmux 0=PC+4 1=beq 2=j 3=jr
+> --    br_t:  t_comparison;     -- branch: 0=no 1=beq 2=bne
+> --    excp:  reg2              -- stage with exception 0=no,1=rf,2=ex,3=mm
+>   
+>   constant ctrl_table : t_control_mem := (
+>   --aVal wmem ins wreg selB fun oper muxC  csel extS PCsel br_t excp
+>     ('1','1',iALU, '1','0','1',opNOP,"001","00", '0', "00",cNOP,"00"),--ALU=0
+>     ('1','1',RIMM, '1','0','0',opNOP,"001","00", '1', "00",cOTH,"00"),--BR=1
+>     ('1','1',J,    '1','0','0',opNOP,"001","00", '0', "10",cNOP,"00"),--j=2
+>     ('1','1',JAL,  '0','0','0',opNOP,"011","10", '0', "10",cNOP,"00"),--jal=3
+>     ('1','1',BEQ,  '1','0','0',opNOP,"001","00", '1', "01",cEQU,"00"),--beq=4
+>     ('1','1',BNE,  '1','0','0',opNOP,"001","00", '1', "01",cNEQ,"00"),--bne=5
+>     ('1','1',BLEZ, '1','0','0',opNOP,"001","00", '1', "01",cLEZ,"00"),--blez=6
+>     ('1','1',BGTZ, '1','0','0',opNOP,"001","00", '1', "01",cGTZ,"00"),--bgtz=7
+>     ('1','1',ADDI, '0','1','0',opADD,"001","01", '1', "00",cNOP,"10"),--addi=8
+>     ('1','1',ADDIU,'0','1','0',opADD,"001","01", '1', "00",cNOP,"00"),--addiu=9
+>     ('1','1',SLTI, '0','1','0',opSLT,"001","01", '1', "00",cNOP,"10"),--slti=10
+>     ('1','1',SLTIU,'0','1','0',opSLTU,"001","01",'1', "00",cNOP,"00"),--sltiu11
+>     ('1','1',ANDI, '0','1','0',opAND,"001","01", '0', "00",cNOP,"00"),--andi=12
+>     ('1','1',ORI,  '0','1','0',opOR, "001","01", '0', "00",cNOP,"00"),--ori=13
+>     ('1','1',XORI, '0','1','0',opXOR,"001","01", '0', "00",cNOP,"00"),--xori=14
+>     ('1','1',LUI,  '0','1','0',opLUI,"001","01", '0', "00",cNOP,"00"),--lui=15
+>     ('1','1',COP0, '1','0','1',opNOP,"110","01", '0', "00",cNOP,"00"),--COP0=16
+>     ('1','1',NIL,  '1','0','0',opNOP,"001","00", '0', "00",cNOP,"00"),--17
+>     ('1','1',NIL,  '1','0','0',opNOP,"001","00", '0', "00",cNOP,"00"),--18
+>     ('1','1',NIL,  '1','0','0',opNOP,"001","00", '0', "00",cNOP,"00"),--19
+>     ('1','1',NIL,  '1','0','0',opNOP,"001","00", '0', "00",cNOP,"00"),--beql=20
+>     ('1','1',NIL,  '1','0','0',opNOP,"001","00", '0', "00",cNOP,"00"),--bnel=21
+>     ('1','1',NIL,  '1','0','0',opNOP,"001","00", '0', "00",cNOP,"00"),--blzel=22
+>     ('1','1',NIL,  '1','0','0',opNOP,"001","00", '0', "00",cNOP,"00"),--bgtzl=23
+>     ('1','1',NIL,  '1','0','0',opNOP,"001","00", '0', "00",cNOP,"00"),--24
+>     ('1','1',NIL,  '1','0','0',opNOP,"001","00", '0', "00",cNOP,"00"),--25
+>     ('1','1',NIL,  '1','0','0',opNOP,"001","00", '0', "00",cNOP,"00"),--26
+>     ('1','1',NIL,  '1','0','0',opNOP,"001","00", '0', "00",cNOP,"00"),--27
+>     ('1','1',NIL,  '1','0','0',opNOP,"001","00", '0', "00",cNOP,"00"),--28
+>     ('1','1',NIL,  '1','0','0',opNOP,"001","00", '0', "00",cNOP,"00"),--29
+>     ('1','1',NIL,  '1','0','0',opNOP,"001","00", '0', "00",cNOP,"00"),--30
+>     ('1','1',SPEC3,'0','0','0',opSPC,"001","00", '0', "00",cNOP,"00"),--special3
+>     ('0','1',LB,   '0','1','0',opADD,"000","01", '1', "00",cNOP,"00"),--lb=32
+>     ('0','1',LH,   '0','1','0',opADD,"000","01", '1', "00",cNOP,"00"),--lh=33
+>     ('0','1',LWL,  '0','1','0',opADD,"000","01", '1', "00",cNOP,"00"),--lwl=34
+>     ('0','1',LW,   '0','1','0',opADD,"000","01", '1', "00",cNOP,"00"),--lw=35
+>     ('0','1',LBU,  '0','1','0',opADD,"000","01", '1', "00",cNOP,"00"),--lbu=36
+>     ('0','1',LHU,  '0','1','0',opADD,"000","01", '1', "00",cNOP,"00"),--lhu=37
+>     ('0','1',LWR,  '0','1','0',opADD,"000","01", '1', "00",cNOP,"00"),--lwr=38
+>     ('1','1',NIL,  '1','0','0',opNOP,"001","00", '0', "00",cNOP,"00"),--39
+>     ('0','0',SB,   '1','1','0',opADD,"001","00", '1', "00",cNOP,"00"),--sb=40
+>     ('0','0',SH,   '1','1','0',opADD,"001","00", '1', "00",cNOP,"00"),--sh=41
+>     ('1','1',NIL,  '1','1','0',opNOP,"001","00", '0', "00",cNOP,"00"),--swl=42
+>     ('0','0',SW,   '1','1','0',opADD,"001","00", '1', "00",cNOP,"00"),--sw=43
+>     ('1','1',NIL,  '1','0','0',opNOP,"001","00", '0', "00",cNOP,"00"),--44
+>     ('1','1',NIL,  '1','0','0',opNOP,"001","00", '0', "00",cNOP,"00"),--45
+>     ('1','1',NIL,  '1','1','0',opNOP,"001","00", '0', "00",cNOP,"00"),--swr=46
+>     ('1','1',NIL,  '1','1','0',opNOP,"001","00", '0', "00",cNOP,"00"),--cache=47
+>     ('0','1',LL,   '0','1','0',opADD,"000","01", '1', "00",cNOP,"00"),--ll=48
+>     ('1','1',NIL,  '1','0','0',opNOP,"001","00", '0', "00",cNOP,"00"),--lwc1=49
+>     ('1','1',NIL,  '1','0','0',opNOP,"001","00", '0', "00",cNOP,"00"),--lwc2=50
+>     ('1','1',NIL,  '1','0','0',opNOP,"001","00", '0', "00",cNOP,"00"),--pref=51
+>     ('1','1',NIL,  '1','0','0',opNOP,"001","00", '0', "00",cNOP,"00"),--52
+>     ('1','1',NIL,  '1','0','0',opNOP,"001","00", '0', "00",cNOP,"00"),--ldc1=53
+>     ('1','1',NIL,  '1','0','0',opNOP,"001","00", '0', "00",cNOP,"00"),--ldc2=54
+>     ('1','1',NIL,  '1','0','0',opNOP,"001","00", '0', "00",cNOP,"00"),--55
+>     ('0','0',SC,   '0','1','0',opADD,"111","01", '1', "00",cNOP,"00"),--sc=56
+>     ('1','1',NIL,  '1','0','0',opNOP,"001","00", '0', "00",cNOP,"00"),--swc1=57
+>     ('1','1',NIL,  '1','0','0',opNOP,"001","00", '0', "00",cNOP,"00"),--swc2=58
+>     ('1','1',NIL,  '1','0','0',opNOP,"001","00", '0', "00",cNOP,"00"),--59
+>     ('1','1',NIL,  '1','0','0',opNOP,"001","00", '0', "00",cNOP,"00"),--60
+>     ('1','1',NIL,  '1','0','0',opNOP,"001","00", '0', "00",cNOP,"00"),--sdc1=61
+>     ('1','1',NIL,  '1','0','0',opNOP,"001","00", '0', "00",cNOP,"00"),--sdc2=62
+>     ('1','1',NOP,  '1','0','0',opNOP,"000","00", '0', "00",cNOP,"00") --63
+>     );
+> 
+> -- fields of the function table (opcode=0)
+> --    i:     instr_type;       -- instruction
+> --    wreg:  std_logic;        -- register write=0
+> --    selB:  std_logic;        -- B ALU input, reg=0 ext=1
+> --    oper:  t_alu_fun;        -- ALU operation
+> --    muxC:  reg3;             -- select result mem=0 ula=1 jr=2 pc+8=3
+> --    trap:  std_logic;        -- trap on compare
+> --    move:  std_logic;        -- conditional move
+> --    sync:  std_logic;        -- synch the memory hierarchy
+> --    PCsel: reg2;             -- PCmux 0=PC+4 1=beq 2=j 3=jr
+> --    excp:  reg2              -- stage with exception 0=no,1=rf,2=ex,3=mm
+>   
+>   constant func_table : t_function_mem := (
+>   -- i    wreg selB oper   muxC trap mov syn PCsel excp
+>     (iSLL, '0','0',opSLL,  "001",'0','0','0',"00","00"),  --sll=0
+>     (NIL,  '1','0',opNOP,  "001",'0','0','0',"00","00"),  --1, FlPoint
+>     (iSRL, '0','0',opSRL,  "001",'0','0','0',"00","00"),  --srl=2
+>     (iSRA, '0','0',opSRA,  "001",'0','0','0',"00","00"),  --sra=3
+>     (SLLV, '0','0',opSLLV, "001",'0','0','0',"00","00"),  --sllv=4
+>     (NIL,  '1','0',opNOP,  "001",'0','0','0',"00","00"),  --5
+>     (SRLV, '0','0',opSRLV, "001",'0','0','0',"00","00"),  --srlv=6
+>     (SRAV, '0','0',opSRAV, "001",'0','0','0',"00","00"),  --srav=7
+>     (JR,   '1','0',opNOP,  "001",'0','0','0',"11","00"),  --jr=8
+>     (JALR, '0','0',opNOP,  "011",'0','0','0',"11","00"),  --jalr=9
+>     (MOVZ, '0','0',opMOVZ, "001",'0','1','0',"00","00"),  --movz=10
+>     (MOVN, '0','0',opMOVN, "001",'0','1','0',"00","00"),  --movn=11
+>     (SYSCALL,'1','0',trNOP,"001",'1','0','0',"00","00"),  --syscall=12
+>     (BREAK,'1','0',trNOP,  "001",'1','0','0',"00","00"),  --break=13
+>     (NIL,  '1','0',opNOP,  "001",'0','0','0',"00","00"),  --14
+>     (NIL,  '1','0',opNOP,  "001",'0','0','0',"00","00"),  --15
+>     (MFHI, '0','0',opMFHI, "100",'0','0','0',"00","00"),  --mfhi=16
+>     (MTHI, '1','0',opMTHI, "001",'0','0','0',"00","00"),  --mthi=17
+>     (MFLO, '0','0',opMFLO, "101",'0','0','0',"00","00"),  --mflo=18
+>     (MTLO, '1','0',opMTLO, "001",'0','0','0',"00","00"),  --mtlo=19
+>     (NIL,  '1','0',opNOP,  "001",'0','0','0',"00","00"),  --20
+>     (NIL,  '1','0',opNOP,  "001",'0','0','0',"00","00"),  --21
+>     (NIL,  '1','0',opNOP,  "001",'0','0','0',"00","00"),  --22
+>     (NIL,  '1','0',opNOP,  "001",'0','0','0',"00","00"),  --23
+>     (MULT, '1','0',opMULT, "001",'0','0','0',"00","00"),  --mult=24
+>     (MULTU,'1','0',opMULTU,"001",'0','0','0',"00","00"),  --multu=25
+>     (DIV,  '1','0',opDIV,  "001",'0','0','0',"00","00"),  --div=26
+>     (DIVU, '1','0',opDIVU, "001",'0','0','0',"00","00"),  --divu=27
+>     (NIL,  '1','0',opNOP,  "001",'0','0','0',"00","00"),  --28
+>     (NIL,  '1','0',opNOP,  "001",'0','0','0',"00","00"),  --29
+>     (NIL,  '1','0',opNOP,  "001",'0','0','0',"00","00"),  --30
+>     (NIL,  '1','0',opNOP,  "001",'0','0','0',"00","00"),  --31
+>     (ADD,  '0','0',opADD,  "001",'0','0','0',"00","10"),  --add=32
+>     (ADDU, '0','0',opADDU, "001",'0','0','0',"00","00"),  --addu=33
+>     (SUB,  '0','0',opSUB,  "001",'0','0','0',"00","10"),  --sub=34
+>     (SUBU, '0','0',opSUBU, "001",'0','0','0',"00","00"),  --subu=35
+>     (iAND, '0','0',opAND,  "001",'0','0','0',"00","00"),  --and=36
+>     (iOR,  '0','0',opOR,   "001",'0','0','0',"00","00"),  --or=37
+>     (iXOR, '0','0',opXOR,  "001",'0','0','0',"00","00"),  --xor=38
+>     (iNOR, '0','0',opNOR,  "001",'0','0','0',"00","00"),  --nor=39
+>     (NIL,  '1','0',opNOP,  "001",'0','0','0',"00","00"),  --40
+>     (NIL,  '1','0',opNOP,  "001",'0','0','0',"00","00"),  --41
+>     (SLT,  '0','0',opSLT,  "001",'0','0','0',"00","10"),  --slt=42
+>     (SLTU, '0','0',opSLTU, "001",'0','0','0',"00","00"),  --sltu=43
+>     (NIL,  '1','0',opNOP,  "001",'0','0','0',"00","00"),  --44
+>     (NIL,  '1','0',opNOP,  "001",'0','0','0',"00","00"),  --45
+>     (NIL,  '1','0',opNOP,  "001",'0','0','0',"00","00"),  --46
+>     (NIL,  '1','0',opNOP,  "001",'0','0','0',"00","00"),  --47
+>     (TGE,  '1','0',trGEQ,  "001",'1','0','0',"00","01"),  --tge=48
+>     (TGEU, '1','0',trGEU,  "001",'1','0','0',"00","01"),  --tgeu=49
+>     (TLT,  '1','0',trLTH,  "001",'1','0','0',"00","01"),  --tlt=50
+>     (TLTU, '1','0',trLTU,  "001",'1','0','0',"00","01"),  --tltu=51
+>     (TEQ,  '1','0',trEQU,  "001",'1','0','0',"00","01"),  --teq=52
+>     (NIL,  '1','0',opNOP,  "001",'0','0','0',"00","00"),  --53
+>     (TNE,  '1','0',trNEQ,  "001",'1','0','0',"00","01"),  --tne=54
+>     (NIL,  '1','0',opNOP,  "001",'0','0','0',"00","00"),  --55
+>     (NIL,  '1','0',opNOP,  "001",'0','0','0',"00","00"),  --56
+>     (NIL,  '1','0',opNOP,  "001",'0','0','0',"00","00"),  --57
+>     (NIL,  '1','0',opNOP,  "001",'0','0','0',"00","00"),  --58
+>     (NIL,  '1','0',opNOP,  "001",'0','0','0',"00","00"),  --59
+>     (NIL,  '1','0',opNOP,  "001",'0','0','0',"00","00"),  --60
+>     (NIL,  '1','0',opNOP,  "001",'0','0','0',"00","00"),  --61
+>     (NIL,  '1','0',opNOP,  "001",'0','0','0',"00","00"),  --62
+>     (NOP,  '1','0',opNOP,  "001",'0','0','0',"00","00")   --63
+>     );
+> 
+>   -- fields of the register-immediate control table (opcode=1)
+>   --   i:     instr_type;       -- instruction
+>   --   wreg:  std_logic;        -- register write=0
+>   --   selB:  std_logic;        -- B ALU input, reg=0 ext=1
+>   --   br_t:  t_comparison;     -- comparison type: ltz,gez
+>   --   muxC:  reg3;             -- select result mem=0 ula=1 jr=2 *al(pc+8)=3
+>   --   c_sel: reg2              -- select destination reg rd=0 rt=1 31=2
+>   --   trap:  std_logic;        -- trap on compare
+>   --   PCsel: reg2;             -- PCmux 0=PC+4 1=beq 2=j 3=jr
+>   --   excp:  reg2              -- stage with exception 0=no,1=rf,2=ex,3=mm
+>   
+>   constant rimm_table : t_rimm_mem := (
+>   -- i    wreg selB br_t muxC  csel trap PCsel excp
+>     (BLTZ, '1','0',cLTZ, "001","00",'0',"01","00"),  --0bltz
+>     (BGEZ, '1','0',cGEZ, "001","00",'0',"01","00"),  --1bgez
+>     (NIL,  '1','0',cNOP, "001","00",'0',"00","00"),  --2
+>     (NIL,  '1','0',cNOP, "001","00",'0',"00","00"),  --3
+>     (NIL,  '1','0',cNOP, "001","00",'0',"00","00"),  --4
+>     (NIL,  '1','0',cNOP, "001","00",'0',"00","00"),  --5
+>     (NIL,  '1','0',cNOP, "001","00",'0',"00","00"),  --6
+>     (NIL,  '1','0',cNOP, "001","00",'0',"00","00"),  --7
+>     (TGEI, '1','1',tGEQ, "001","00",'1',"00","10"),  --8tgei
+>     (TGEIU,'1','1',tGEU, "001","00",'1',"00","10"),  --9tgeiu
+>     (TLTI, '1','1',tLTH, "001","00",'1',"00","10"),  --10tlti
+>     (TLTIU,'1','1',tLTU, "001","00",'1',"00","10"),  --11tltiu
+>     (TEQI, '1','1',tEQU, "001","00",'1',"00","10"),  --12teqi
+>     (NIL,  '1','0',cNOP, "001","00",'0',"00","00"),  --13
+>     (TNEI, '1','1',tNEQ, "001","00",'1',"00","10"),  --14tnei
+>     (NIL,  '1','0',cNOP, "001","00",'0',"00","00"),  --15
+>     (BLTZAL,'0','0',cLTZ,"011","10",'0',"01","00"),  --16bltzal
+>     (BGEZAL,'0','0',cGEZ,"011","10",'0',"01","00"),  --17bgezal
+>     (NIL,  '1','0',cNOP, "001","00",'0',"00","00"),  --18
+>     (NIL,  '1','0',cNOP, "001","00",'0',"00","00"),  --19
+>     (NIL,  '1','0',cNOP, "001","00",'0',"00","00"),  --20
+>     (NIL,  '1','0',cNOP, "001","00",'0',"00","00"),  --21
+>     (NIL,  '1','0',cNOP, "001","00",'0',"00","00"),  --22
+>     (NIL,  '1','0',cNOP, "001","00",'0',"00","00"),  --23
+>     (NIL,  '1','0',cNOP, "001","00",'0',"00","00"),  --24
+>     (NIL,  '1','0',cNOP, "001","00",'0',"00","00"),  --25
+>     (NIL,  '1','0',cNOP, "001","00",'0',"00","00"),  --26
+>     (NIL,  '1','0',cNOP, "001","00",'0',"00","00"),  --27
+>     (NIL,  '1','0',cNOP, "001","00",'0',"00","00"),  --28
+>     (NIL,  '1','0',cNOP, "001","00",'0',"00","00"),  --29
+>     (NIL,  '1','0',cNOP, "001","00",'0',"00","00"),  --30
+>     (NOP,  '1','0',cNOP, "001","00",'0',"00","00")   --31
+>     );
+> 
+>   -- Table 8-30 Config Register Field Descriptions, pg 101
+>   constant CONFIG0 : reg32 := (
+>     '1'&        -- M, Config1 implemented = 1
+>     b"000"&     -- K23, with MMU, kseg2,kseg3 coherency algorithm
+>     b"000"&     -- KU, with MMU, kuseg coherency algorithm
+>     b"000000000"& -- Impl, implementation dependent = 0
+>     '0'&        -- BE, little endian = 0
+>     b"00"&      -- AT, MIPS32 = 0
+>     b"001"&     -- AR, Release 2 = 1
+>     b"000"&     -- MT, MMU type = 0, none
+>     b"000"&     -- nil, always zero = 0
+>     '1'&        -- VI, Instruction Cache is virtual = 1
+>     b"000"      -- K0, Kseg0 coherency algorithm
+>     );
+> 
+>   -- Table 8-31 Config1 Register Field Descriptions, pg 103
+>   constant CONFIG1 : reg32 := (
+>     '0'&               -- M, Config2 implemented = 0
+>     b"000000"&         -- MMUsz, MMU entries minus 1
+>     IC_SETS_PER_WAY  & -- ICS, IC sets per way
+>     IC_LINE_SIZE     & -- ICL, IC line size
+>     IC_ASSOCIATIVITY & -- ICA, IC associativity
+>     DC_SETS_PER_WAY  & -- DCS, DC sets per way
+>     DC_LINE_SIZE     & -- DCL, DC line size = 3 16 bytes/line
+>     DC_ASSOCIATIVITY & -- DCA, DC associativity = 0 direct mapped
+>     '0'&        -- C2, No coprocessor 2 implemented = 0
+>     '0'&        -- MD, No MDMX ASE implemented = 0
+>     '0'&        -- PC, No performance counters implemented = 0
+>     '0'&        -- WR, No watch registers implemented = 0
+>     '0'&        -- CA, No code compression implemented = 0
+>     '0'&        -- EP, No EJTAG implemented = 0
+>     '0'         -- FP, No FPU implemented = 0
+>     );
+> 
+>    
+58,59d312
+<          PC_abort:     in  boolean;
+<          RF_PC_abort:  out  boolean;
+66,69d318
+<          RF_cop0_reg:     in  reg5;
+<          EX_cop0_reg:     out reg5;
+<          RF_cop0_sel:     in  reg3;
+<          EX_cop0_sel:     out reg3;
+75a325,328
+>          RF_cop0_reg:     in  std_logic_vector;
+>          EX_cop0_reg:     out std_logic_vector;
+>          RF_cop0_sel:     in  std_logic_vector;
+>          EX_cop0_sel:     out std_logic_vector;
+78,79d330
+<          RF_PC_abort:     in  boolean;
+<          EX_PC_abort:     out  boolean;
+82,83c333,342
+<          RF_trap_taken:   in  boolean;
+<          EX_trapped:      out boolean);
+---
+>          RF_nmi:          in  std_logic;
+>          EX_nmi:          out std_logic;
+>          RF_interrupt:    in  std_logic;
+>          EX_interrupt:    out std_logic;
+>          RF_int_req:      in  std_logic_vector;
+>          EX_int_req:      out std_logic_vector;
+>          RF_tr_is_equal:  in  std_logic;
+>          EX_tr_is_equal:  out std_logic;
+>          RF_tr_less_than: in  std_logic;
+>          EX_tr_less_than: out std_logic);
+88,91c347,350
+<          EX_cop0_reg:   in  reg5;
+<          MM_cop0_reg:   out reg5;
+<          EX_cop0_sel:   in  reg3;
+<          MM_cop0_sel:   out reg3;
+---
+>          EX_can_trap:   in  std_logic_vector;
+>          MM_can_trap:   out std_logic_vector;
+>          EX_excp_type:  in  exception_type;
+>          MM_excp_type:  out exception_type;
+94,131c353,360
+<          EX_v_addr:     in  std_logic_vector;
+<          MM_v_addr:     out std_logic_vector;
+<          nullify:       in  boolean;
+<          MM_nullify:    out boolean;
+<          addrError:     in  boolean;
+<          MM_addrError:  out boolean;
+<          addrErr_stage_mm:    in  boolean;
+<          MM_addrErr_stage_mm: out boolean;
+<          mem_excp_type:    in  exception_type;
+<          MM_mem_excp_type: out exception_type;
+<          EX_is_delayslot: in  std_logic;
+<          MM_is_delayslot: out std_logic;
+<          EX_ovfl:       in  boolean;
+<          MM_ex_ovfl:    out boolean;
+<          EX_trapped:    in  boolean;
+<          MM_trapped:    out boolean;
+<          EX_pc_abort:   in  boolean;
+<          MM_pc_abort:   out boolean;
+<          EX_ll_sc_abort: in boolean;
+<          MM_ll_sc_abort: out boolean;
+<          EX_exception:   in  exception_type;
+<          MM_exception:   out exception_type;
+<          TLB_exception:    in  boolean;
+<          MM_tlb_exception: out boolean;
+<          tlb_stage_MM:     in  boolean;
+<          MM_tlb_stage_MM:  out boolean;
+<          TLB_excp_type:    in  exception_type;
+<          MM_TLB_excp_type: out exception_type;
+<          EX_nmi:           in  std_logic;
+<          MM_nmi:           out std_logic;       
+<          EX_interrupt:     in  std_logic;
+<          MM_interrupt:     out std_logic;
+<          EX_int_req:       in  reg8;
+<          MM_int_req:       out reg8;
+<          EX_is_SC:         in  boolean;
+<          MM_is_SC:         out boolean;
+<          EX_is_MFC0:       in  boolean;
+<          MM_is_MFC0:       out boolean);
+---
+>          EX_cop0_LLbit: in  std_logic;
+>          MM_cop0_LLbit: out std_logic;
+>          EX_cop0_a_c:   in  std_logic_vector;
+>          MM_cop0_a_c:   out std_logic_vector;
+>          EX_cop0_val:   in  std_logic_vector;
+>          MM_cop0_val:   out std_logic_vector;
+>          EX_trapped:    in  std_logic;
+>          MM_ex_trapped: out std_logic);
+135a365,368
+>          MM_can_trap:   in  std_logic_vector;
+>          WB_can_trap:   out std_logic_vector;
+>          MM_excp_type:  in  exception_type;
+>          WB_excp_type:  out exception_type;
+140,141c373,376
+<          MM_is_delayslot: in  std_logic;
+<          WB_is_delayslot: out std_logic;
+---
+>          MM_abort:      in  std_logic;
+>          WB_abort:      out std_logic;
+>          MM_cop0_a_c:   in  std_logic_vector;
+>          WB_cop0_a_c:   out std_logic_vector;
+146,154c381,387
+<   signal annul_1, annul_2, annul_twice : std_logic;
+<   signal interrupt,MM_interrupt, exception_stall : std_logic;
+<   signal exception_taken, interrupt_taken : std_logic;
+<   signal nullify_fetch, nullify, MM_nullify : boolean;
+<   signal addrError, MM_addrError, abort_ref, MM_ll_sc_abort : boolean;
+<   signal PC_abort, RF_PC_abort, EX_PC_abort, MM_PC_abort : boolean;
+<   signal IF_excp_type,RF_excp_type: exception_type;
+<   signal mem_excp_type, MM_mem_excp_type : exception_type;
+<   signal TLB_excp_type, MM_TLB_excp_type : exception_type;
+---
+>   signal i_addr_error : std_logic := '0';
+>  
+>   signal interrupt,EX_interrupt, exception_stall : std_logic;
+>   signal exception_taken, interrupt_taken, trap_taken : std_logic;
+>   signal nullify, nullify_EX, abort, MM_abort,WB_abort : std_logic := '0';
+>   signal IF_excp_type,RF_excp_type,EX_excp_type,WB_excp_type: exception_type := exNOP;
+>   signal MM_excp_type, MM_excp_type_i, MM_addr_error, MM_excp_TLB : exception_type;
+157,162c390,394
+<   signal ll_sc_bit, MM_LLbit,WB_LLbit: std_logic;
+<   signal LL_update, LL_SC_abort, LL_SC_differ: std_logic;
+<   signal EX_trapped, MM_trapped, EX_ovfl,MM_ex_ovfl, trap_taken: boolean;
+<   signal int_req, MM_int_req: reg8;
+<   signal EX_nmi,MM_nmi : std_logic;
+<   signal can_trap,EX_can_trap : reg2;
+---
+>   signal EX_LLbit,MM_LLbit,WB_LLbit: std_logic;
+>   signal LL_update, LL_SC_abort, EX_trapped,MM_ex_trapped: std_logic;
+>   signal int_req, EX_int_req: reg8;
+>   signal RF_nmi,EX_nmi : std_logic;
+>   signal can_trap,EX_can_trap,MM_can_trap,WB_can_trap: reg2;
+164c396
+<   signal tr_is_equal, tr_less_than: std_logic;
+---
+>   signal tr_is_equal,EX_tr_is_equal, tr_less_than,EX_tr_less_than: std_logic;
+166c398,399
+<   signal excp_IF_RF_ld,excp_RF_EX_ld,excp_EX_MM_ld,excp_MM_WB_ld: std_logic;
+---
+>   signal excp_IF_RF_ld,excp_RF_EX_ld,excp_EX_MM_ld,excp_MM_WB_ld:
+>     std_logic := '0';
+172c405
+<   signal COUNT, COMPARE : reg32;
+---
+>   signal COUNT,COMPARE : reg32;
+174c407
+<   signal exception,EX_exception,MM_exception, is_exception : exception_type;
+---
+>   signal exception,EX_exception,is_exception: exception_type := exNOP;
+176,180c409,414
+<   signal exception_num,exception_dec,TLB_excp_num,trap_dec: integer; -- debugging
+<   signal RF_is_delayslot,EX_is_delayslot,MM_is_delayslot,WB_is_delayslot,is_delayslot : std_logic;
+<   signal cop0_sel, EX_cop0_sel, MM_cop0_sel, epc_source : reg3;
+<   signal cop0_reg,EX_cop0_reg,MM_cop0_reg : reg5;
+<   signal cop0_inp, RF_cop0_val,MM_cop0_val,WB_cop0_val : reg32;
+---
+>   signal exception_num, exception_dec : integer;       -- for debugging only
+>   signal next_instr_in_delay_slot,EX_is_delayslot : std_logic := '0';
+>   signal cop0_sel, EX_cop0_sel, epc_source : reg3;
+>   signal cop0_reg,EX_cop0_reg : reg5;
+>   signal cop0_inp, RF_cop0_val,EX_cop0_val,MM_cop0_val,WB_cop0_val : reg32;
+>   signal EX_cop0_a_c,MM_cop0_a_c,WB_cop0_a_c : reg5;
+182,183c416
+<   signal BadVAddr_update : std_logic;
+<   signal is_SC, MM_is_SC, is_MFC0, MM_is_MFC0 : boolean;
+---
+>   signal BadVAddr_update, BadVAddr_source : std_logic;
+185,223d417
+<   -- MMU signals --
+<   signal INDEX, index_inp, RANDOM, WIRED, wired_inp : reg32;
+<   signal index_update, wired_update : std_logic;
+<   signal EntryLo0, EntryLo1, EntryLo0_inp, EntryLo1_inp : reg32;
+<   signal EntryHi, EntryHi_inp, v_addr, MM_v_addr : reg32;
+<   signal Context, PageMask, PageMask_inp : reg32;
+<   signal entryLo0_update, entryLo1_update, entryHi_update : std_logic;
+<   signal context_upd_pte, context_upd_bad, tlb_read, tlb_ex_2 : std_logic;
+<   signal tlb_entrylo0_mm, tlb_entrylo1_mm, tlb_entryhi : reg32;
+<   signal tlb_tag0_updt, tlb_tag1_updt, tlb_tag2_updt, tlb_tag3_updt : std_logic;
+<   signal tlb_tag4_updt, tlb_tag5_updt, tlb_tag6_updt, tlb_tag7_updt : std_logic;
+<   signal tlb_dat0_updt, tlb_dat1_updt, tlb_dat2_updt, tlb_dat3_updt : std_logic;
+<   signal tlb_dat4_updt, tlb_dat5_updt, tlb_dat6_updt, tlb_dat7_updt : std_logic;
+<   signal hit0_pc, hit1_pc, hit2_pc, hit3_pc, hit_pc : boolean;
+<   signal hit4_pc, hit5_pc, hit6_pc, hit7_pc : boolean;
+<   signal hit0_mm, hit1_mm, hit2_mm, hit3_mm, hit_mm : boolean;
+<   signal hit4_mm, hit5_mm, hit6_mm, hit7_mm: boolean;
+<   signal tlb_exception,MM_tlb_exception,tlb_stage_mm,MM_tlb_stage_mm : boolean;
+<   signal addrErr_stage_mm, MM_addrErr_stage_mm : boolean;
+<   signal hit_mm_v, hit_mm_d, hit_pc_v : std_logic;
+<   signal tlb_adr_mm : MMU_idx_bits;
+<   signal tlb_probe, probe_hit, hit_mm_bit : std_logic;
+<   signal mm, tlb_excp_VA : std_logic_vector(VA_HI_BIT downto VA_LO_BIT);
+<   signal tlb_adr,tlb_a0_pc,tlb_a1_pc,tlb_a2_pc : natural range 0 to (MMU_CAPACITY-1);
+<   signal hit_pc_adr, hit_mm_adr : natural range 0 to (MMU_CAPACITY-1);
+<   signal tlb_a0_mm,tlb_a1_mm,tlb_a2_mm : natural range 0 to (MMU_CAPACITY-1);
+<   signal tlb_ppn_pc0,tlb_ppn_pc1 : mmu_dat_reg;
+<   signal tlb_ppn_mm0,tlb_ppn_mm1 : mmu_dat_reg;
+<   signal tlb_ppn_mm, tlb_ppn_pc  : std_logic_vector(PPN_BITS - 1 downto 0);
+<   
+<   signal tlb_tag0, tlb_tag1, tlb_tag2, tlb_tag3, tlb_tag_inp : reg32;
+<   signal tlb_tag4, tlb_tag5, tlb_tag6, tlb_tag7, e_hi, e_hi_inp : reg32;
+<   signal tlb_dat0_inp, tlb_dat1_inp, e_lo0, e_lo1 : mmu_dat_reg;
+<   signal tlb_dat0_0, tlb_dat1_0, tlb_dat2_0, tlb_dat3_0 : mmu_dat_reg;
+<   signal tlb_dat0_1, tlb_dat1_1, tlb_dat2_1, tlb_dat3_1 : mmu_dat_reg;
+<   signal tlb_dat4_0, tlb_dat5_0, tlb_dat6_0, tlb_dat7_0 : mmu_dat_reg;
+<   signal tlb_dat4_1, tlb_dat5_1, tlb_dat6_1, tlb_dat7_1 : mmu_dat_reg;
+< 
+<   signal tlb_entryLo0, tlb_entryLo1, phy_i_addr, phy_d_addr : reg32;
+226a421,428
+>   component sr_latch is
+>     port(set,clr : in  std_logic;  Q : out std_logic);
+>   end component sr_latch;
+> 
+>   component sr_latch_rst is
+>     port(rst, set, clr: in  std_logic; Q: out std_logic);
+>   end component sr_latch_rst;
+> 
+268,274d469
+<   component registerN is
+<     generic (NUM_BITS: integer; INIT_VAL: std_logic_vector);
+<     port(clk, rst, ld: in  std_logic;
+<          D:            in  std_logic_vector;
+<          Q:            out std_logic_vector);
+<   end component registerN;
+< 
+295,307c490,509
+<   signal PC,PC_aligned : reg32;
+<   signal PCinp,PCinp_noExcp, PCincd : reg32;
+<   signal instr_fetched : reg32;
+<   signal PCload, IF_RF_ld : std_logic;
+<   signal PCsel : reg2;
+<   signal excp_PCsel : reg3;
+< 
+<   signal rom_stall, iaVal, if_stalled, mem_stall, pipe_stall : std_logic;
+<   signal ram_stall, daVal, mm_stalled : std_logic;
+<   signal br_target, br_addend, br_tgt_pl4, br_tgt_displ, j_target : reg32;
+<   signal RF_PCincd, RF_instruction : reg32;
+<   signal eq_fwd_A,eq_fwd_B : reg32;
+<   signal dbg_jr_stall: integer;         -- debugging only
+---
+>   signal PC,PC_aligned: reg32;
+>   signal PCinp,PCinp_noExcp, PCincd: reg32;
+>   signal instr_fetched: reg32;
+>   signal PCload: std_logic;
+>   signal PCsel: reg2 := b"00";
+>   signal excp_PCsel: reg3 := b"000";
+> 
+>   signal rom_stall, iaVal, ram_stall, daVal : std_logic := '0';
+>   signal IF_RF_ld: std_logic := '0';    
+>   signal br_target, j_target: reg32 := x"FFFFFFFF";
+>   signal RF_PCincd: reg32;
+>   signal instruction, instr_valid: reg32;
+>   signal eq_fwd_A,eq_fwd_B: reg32;
+> 
+>   type mem_state is (st_start, st_assert1, st_assert2, st_done, st_waiting);
+>   attribute SYN_ENCODING of mem_state : type is "safe";
+>   signal if_current_st,if_next_st: mem_state;
+>   signal if_state : integer;
+>   -- attribute FSM_STATE    of if_current_st,if_next_st : signal is "ONE_HOT";
+>   -- attribute FSM_COMPLETE of if_current_st,if_next_st : signal is true;
+321a524
+>   -- signal break_n, trap_n : reg10;
+328c531,532
+<   signal is_branch: std_logic;
+---
+>   signal is_branch: std_logic := 'L';
+>   -- attribute BUFFERED of is_branch : signal is "HIGH_DRIVE";
+335,336c539
+<   signal move,EX_move,MM_move : std_logic;
+<   signal is_load,EX_is_load,MM_is_load : boolean;
+---
+>   signal move,EX_move, is_load,EX_is_load : std_logic;
+338,340c541,544
+<   signal wreg,EX_wreg_pre,EX_wreg,MM_wreg_cond,MM_wreg,WB_wreg: std_logic;
+<   signal aVal,EX_aVal,EX_aVal_cond,MM_aVal: std_logic;
+<   signal wrmem,EX_wrmem,EX_wrmem_cond,MM_wrmem, m_sign_ext: std_logic;
+---
+>   signal wreg,EX_wreg_pre,EX_wreg,MM_wreg_cond,MM_wreg,WB_wreg:
+>     std_logic := 'H';
+>   signal aVal,EX_aVal,EX_aVal_cond,MM_aVal: std_logic := 'H';
+>   signal wrmem,EX_wrmem,EX_wrmem_cond,MM_wrmem, m_sign_ext: std_logic := 'H';
+342a547,548
+>   -- attribute CLOCK_SIGNAL of MM_wrmem : signal is "no";
+>   -- attribute BUFFERED     of MM_wrmem : signal is "HIGH_DRIVE";
+345c551
+<   signal alu_move_ok, MM_alu_move_ok, ovfl,MM_ovfl : std_logic;
+---
+>   signal alu_move_ok, ovfl,MM_ovfl : std_logic;
+352c558
+<   signal result,MM_result,WB_result,WB_C, EX_addr,MM_addr: reg32;
+---
+>   signal result,MM_result,WB_result,WB_C: reg32;
+359,360c565,567
+<   signal d_addr_pre: reg2;
+<   signal jr_stall, br_stall, fwd_lwlr, sw_stall, lw_stall : std_logic;
+---
+>   signal jr_stall, br_stall, fwd_lwlr, sw_stall : std_logic := '0';
+>   -- attribute CLOCK_SIGNAL of rom_stall,ram_stall : signal is "no";
+>   -- attribute BUFFERED     of rom_stall,ram_stall : signal is "HIGH_DRIVE";
+362a570,573
+>   signal db_current_st,db_next_st: mem_state;
+>   -- attribute FSM_STATE    of db_current_st,db_next_st : signal is "ONE_HOT";  
+>   -- attribute FSM_COMPLETE of db_current_st,db_next_st : signal is true;  
+>   signal db_state : integer;
+363a575
+>   
+392,393c604,605
+<          is_load:    in  boolean;
+<          EX_is_load: out boolean;
+---
+>          is_load:    in  std_logic;
+>          EX_is_load: out std_logic;
+420,421d631
+<          EX_is_load: in  boolean;
+<          MM_is_load: out boolean;
+428,429d637
+<          EX_addr:    in  std_logic_vector;
+<          MM_addr:    out std_logic_vector;
+434,437d641
+<          EX_alu_move_ok: in  std_logic;
+<          MM_alu_move_ok: out std_logic;
+<          EX_move:    in  std_logic;
+<          MM_move:    out std_logic;
+470,717c674,675
+< 
+< -- fields of the control table
+< --    aVal:  std_logic;        -- addressValid, enable data-mem=0
+< --    wmem:  std_logic;        -- READ=1/WRITE=0 in/to memory
+< --    i:     instr_type;       -- instruction
+< --    wreg:  std_logic;        -- register write=0
+< --    selB:  std_logic;        -- B ALU input, reg=0 ext=1
+< --    fun:   std_logic;        -- check function_field=1
+< --    oper:  t_alu_fun;        -- ALU operation
+< --    muxC:  reg3;             -- select result mem=0 ula=1 jr=2 pc+8=3
+< --    c_sel: reg2;             -- select destination reg RD=0 RT=1 31=2
+< --    extS:  std_logic;        -- sign-extend=1, zero-ext=0
+< --    PCsel: reg2;             -- PCmux 0=PC+4 1=beq 2=j 3=jr
+< --    br_t:  t_comparison;     -- branch: 0=no 1=beq 2=bne
+< --    excp:  reg2              -- stage with exception 0=no,1=rf,2=ex,3=mm
+<   
+<   constant ctrl_table : t_control_mem := (
+<   --aVal wmem ins wreg selB fun oper muxC  csel extS PCsel br_t excp
+<     ('1','1',iALU, '1','0','1',opNOP,"001","00", '0', "00",cNOP,"00"),--ALU=0
+<     ('1','1',RIMM, '1','0','0',opNOP,"001","00", '1', "00",cOTH,"00"),--BR=1
+<     ('1','1',J,    '1','0','0',opNOP,"001","00", '0', "10",cNOP,"00"),--j=2
+<     ('1','1',JAL,  '0','0','0',opNOP,"011","10", '0', "10",cNOP,"00"),--jal=3
+<     ('1','1',BEQ,  '1','0','0',opNOP,"001","00", '1', "01",cEQU,"00"),--beq=4
+<     ('1','1',BNE,  '1','0','0',opNOP,"001","00", '1', "01",cNEQ,"00"),--bne=5
+<     ('1','1',BLEZ, '1','0','0',opNOP,"001","00", '1', "01",cLEZ,"00"),--blez=6
+<     ('1','1',BGTZ, '1','0','0',opNOP,"001","00", '1', "01",cGTZ,"00"),--bgtz=7
+<     ('1','1',ADDI, '0','1','0',opADD,"001","01", '1', "00",cNOP,"10"),--addi=8
+<     ('1','1',ADDIU,'0','1','0',opADD,"001","01", '1', "00",cNOP,"00"),--addiu=9
+<     ('1','1',SLTI, '0','1','0',opSLT,"001","01", '1', "00",cNOP,"10"),--slti=10
+<     ('1','1',SLTIU,'0','1','0',opSLTU,"001","01",'1', "00",cNOP,"00"),--sltiu11
+<     ('1','1',ANDI, '0','1','0',opAND,"001","01", '0', "00",cNOP,"00"),--andi=12
+<     ('1','1',ORI,  '0','1','0',opOR, "001","01", '0', "00",cNOP,"00"),--ori=13
+<     ('1','1',XORI, '0','1','0',opXOR,"001","01", '0', "00",cNOP,"00"),--xori=14
+<     ('1','1',LUI,  '0','1','0',opLUI,"001","01", '0', "00",cNOP,"00"),--lui=15
+<     ('1','1',COP0, '1','0','1',opNOP,"110","01", '0', "00",cNOP,"00"),--COP0=16
+<     ('1','1',NIL,  '1','0','0',opNOP,"001","00", '0', "00",cNOP,"00"),--17
+<     ('1','1',NIL,  '1','0','0',opNOP,"001","00", '0', "00",cNOP,"00"),--18
+<     ('1','1',NIL,  '1','0','0',opNOP,"001","00", '0', "00",cNOP,"00"),--19
+<     ('1','1',NIL,  '1','0','0',opNOP,"001","00", '0', "00",cNOP,"00"),--beql=20
+<     ('1','1',NIL,  '1','0','0',opNOP,"001","00", '0', "00",cNOP,"00"),--bnel=21
+<     ('1','1',NIL,  '1','0','0',opNOP,"001","00", '0', "00",cNOP,"00"),--blzel=22
+<     ('1','1',NIL,  '1','0','0',opNOP,"001","00", '0', "00",cNOP,"00"),--bgtzl=23
+<     ('1','1',NIL,  '1','0','0',opNOP,"001","00", '0', "00",cNOP,"00"),--24
+<     ('1','1',NIL,  '1','0','0',opNOP,"001","00", '0', "00",cNOP,"00"),--25
+<     ('1','1',NIL,  '1','0','0',opNOP,"001","00", '0', "00",cNOP,"00"),--26
+<     ('1','1',NIL,  '1','0','0',opNOP,"001","00", '0', "00",cNOP,"00"),--27
+<     ('1','1',SPEC2,'0','0','0',opSPC,"001","00", '0', "00",cNOP,"00"),--28
+<     ('1','1',NIL,  '1','0','0',opNOP,"001","00", '0', "00",cNOP,"00"),--29
+<     ('1','1',NIL,  '1','0','0',opNOP,"001","00", '0', "00",cNOP,"00"),--30
+<     ('1','1',SPEC3,'0','0','0',opSPC,"001","00", '0', "00",cNOP,"00"),--special3
+<     ('0','1',LB,   '0','1','0',opADD,"000","01", '1', "00",cNOP,"11"),--lb=32
+<     ('0','1',LH,   '0','1','0',opADD,"000","01", '1', "00",cNOP,"11"),--lh=33
+<     ('0','1',LWL,  '0','1','0',opADD,"000","01", '1', "00",cNOP,"11"),--lwl=34
+<     ('0','1',LW,   '0','1','0',opADD,"000","01", '1', "00",cNOP,"11"),--lw=35
+<     ('0','1',LBU,  '0','1','0',opADD,"000","01", '1', "00",cNOP,"11"),--lbu=36
+<     ('0','1',LHU,  '0','1','0',opADD,"000","01", '1', "00",cNOP,"11"),--lhu=37
+<     ('0','1',LWR,  '0','1','0',opADD,"000","01", '1', "00",cNOP,"11"),--lwr=38
+<     ('1','1',NIL,  '1','0','0',opNOP,"001","00", '0', "00",cNOP,"00"),--39
+<     ('0','0',SB,   '1','1','0',opADD,"001","00", '1', "00",cNOP,"11"),--sb=40
+<     ('0','0',SH,   '1','1','0',opADD,"001","00", '1', "00",cNOP,"11"),--sh=41
+<     ('1','1',NIL,  '1','0','0',opNOP,"001","00", '0', "00",cNOP,"00"),--swl=42
+<     ('0','0',SW,   '1','1','0',opADD,"001","00", '1', "00",cNOP,"11"),--sw=43
+<     ('1','1',NIL,  '1','0','0',opNOP,"001","00", '0', "00",cNOP,"00"),--44
+<     ('1','1',NIL,  '1','0','0',opNOP,"001","00", '0', "00",cNOP,"00"),--45
+<     ('1','1',NIL,  '1','0','0',opNOP,"001","00", '0', "00",cNOP,"00"),--swr=46
+<     ('1','1',NIL,  '1','0','0',opNOP,"001","00", '0', "00",cNOP,"00"),--cache=47
+<     ('0','1',LL,   '0','1','0',opADD,"000","01", '1', "00",cNOP,"11"),--ll=48
+<     ('1','1',NIL,  '1','0','0',opNOP,"001","00", '0', "00",cNOP,"00"),--lwc1=49
+<     ('1','1',NIL,  '1','0','0',opNOP,"001","00", '0', "00",cNOP,"00"),--lwc2=50
+<     ('1','1',NIL,  '1','0','0',opNOP,"001","00", '0', "00",cNOP,"00"),--pref=51
+<     ('1','1',NIL,  '1','0','0',opNOP,"001","00", '0', "00",cNOP,"00"),--52
+<     ('1','1',NIL,  '1','0','0',opNOP,"001","00", '0', "00",cNOP,"00"),--ldc1=53
+<     ('1','1',NIL,  '1','0','0',opNOP,"001","00", '0', "00",cNOP,"00"),--ldc2=54
+<     ('1','1',NIL,  '1','0','0',opNOP,"001","00", '0', "00",cNOP,"00"),--55
+<     ('0','0',SC,   '0','1','0',opADD,"111","01", '1', "00",cNOP,"11"),--sc=56
+<     ('1','1',NIL,  '1','0','0',opNOP,"001","00", '0', "00",cNOP,"00"),--swc1=57
+<     ('1','1',NIL,  '1','0','0',opNOP,"001","00", '0', "00",cNOP,"00"),--swc2=58
+<     ('1','1',NIL,  '1','0','0',opNOP,"001","00", '0', "00",cNOP,"00"),--59
+<     ('1','1',NIL,  '1','0','0',opNOP,"001","00", '0', "00",cNOP,"00"),--60
+<     ('1','1',NIL,  '1','0','0',opNOP,"001","00", '0', "00",cNOP,"00"),--sdc1=61
+<     ('1','1',NIL,  '1','0','0',opNOP,"001","00", '0', "00",cNOP,"00"),--sdc2=62
+<     ('1','1',NOP,  '1','0','0',opNOP,"000","00", '0', "00",cNOP,"00") --63
+<     );
+< 
+< -- fields of the function table (opcode=0)
+< --    i:     instr_type;       -- instruction
+< --    wreg:  std_logic;        -- register write=0
+< --    selB:  std_logic;        -- B ALU input, reg=0 ext=1
+< --    oper:  t_alu_fun;        -- ALU operation
+< --    muxC:  reg3;             -- select result mem=0 ula=1 jr=2 pc+8=3
+< --    trap:  std_logic;        -- trap on compare
+< --    move:  std_logic;        -- conditional move
+< --    sync:  std_logic;        -- synch the memory hierarchy
+< --    PCsel: reg2;             -- PCmux 0=PC+4 1=beq 2=j 3=jr
+< --    excp:  reg2              -- stage with exception 0=no,1=rf,2=ex,3=mm
+<   
+<   constant func_table : t_function_mem := (
+<   -- i    wreg selB oper   muxC trap mov syn PCsel excp
+<     (iSLL, '0','0',opSLL,  "001",'1','0','0',"00","00"),  --sll=0, EHB
+<     (NIL,  '1','0',opNOP,  "001",'0','0','0',"00","00"),  --1, FlPoint
+<     (iSRL, '0','0',opSRL,  "001",'0','0','0',"00","00"),  --srl=2
+<     (iSRA, '0','0',opSRA,  "001",'0','0','0',"00","00"),  --sra=3
+<     (SLLV, '0','0',opSLLV, "001",'0','0','0',"00","00"),  --sllv=4
+<     (NIL,  '1','0',opNOP,  "001",'0','0','0',"00","00"),  --5
+<     (SRLV, '0','0',opSRLV, "001",'0','0','0',"00","00"),  --srlv=6
+<     (SRAV, '0','0',opSRAV, "001",'0','0','0',"00","00"),  --srav=7
+<     (JR,   '1','0',opNOP,  "001",'0','0','0',"11","00"),  --jr=8
+<     (JALR, '0','0',opNOP,  "011",'0','0','0',"11","00"),  --jalr=9
+<     (MOVZ, '0','0',opMOVZ, "001",'0','1','0',"00","00"),  --movz=10
+<     (MOVN, '0','0',opMOVN, "001",'0','1','0',"00","00"),  --movn=11
+<     (SYSCALL,'1','0',trNOP,"001",'1','0','0',"00","00"),  --syscall=12
+<     (BREAK,'1','0',trNOP,  "001",'1','0','0',"00","00"),  --break=13
+<     (NIL,  '1','0',opNOP,  "001",'0','0','0',"00","00"),  --14
+<     (NIL,  '1','0',opNOP,  "001",'0','0','0',"00","00"),  --15
+<     (MFHI, '0','0',opMFHI, "100",'0','0','0',"00","00"),  --mfhi=16
+<     (MTHI, '1','0',opMTHI, "001",'0','0','0',"00","00"),  --mthi=17
+<     (MFLO, '0','0',opMFLO, "101",'0','0','0',"00","00"),  --mflo=18
+<     (MTLO, '1','0',opMTLO, "001",'0','0','0',"00","00"),  --mtlo=19
+<     (NIL,  '1','0',opNOP,  "001",'0','0','0',"00","00"),  --20
+<     (NIL,  '1','0',opNOP,  "001",'0','0','0',"00","00"),  --21
+<     (NIL,  '1','0',opNOP,  "001",'0','0','0',"00","00"),  --22
+<     (NIL,  '1','0',opNOP,  "001",'0','0','0',"00","00"),  --23
+<     (MULT, '1','0',opMULT, "001",'0','0','0',"00","00"),  --mult=24
+<     (MULTU,'1','0',opMULTU,"001",'0','0','0',"00","00"),  --multu=25
+<     (DIV,  '1','0',opDIV,  "001",'0','0','0',"00","00"),  --div=26
+<     (DIVU, '1','0',opDIVU, "001",'0','0','0',"00","00"),  --divu=27
+<     (NIL,  '1','0',opNOP,  "001",'0','0','0',"00","00"),  --28
+<     (NIL,  '1','0',opNOP,  "001",'0','0','0',"00","00"),  --29
+<     (NIL,  '1','0',opNOP,  "001",'0','0','0',"00","00"),  --30
+<     (NIL,  '1','0',opNOP,  "001",'0','0','0',"00","00"),  --31
+<     (ADD,  '0','0',opADD,  "001",'0','0','0',"00","10"),  --add=32
+<     (ADDU, '0','0',opADDU, "001",'0','0','0',"00","00"),  --addu=33
+<     (SUB,  '0','0',opSUB,  "001",'0','0','0',"00","10"),  --sub=34
+<     (SUBU, '0','0',opSUBU, "001",'0','0','0',"00","00"),  --subu=35
+<     (iAND, '0','0',opAND,  "001",'0','0','0',"00","00"),  --and=36
+<     (iOR,  '0','0',opOR,   "001",'0','0','0',"00","00"),  --or=37
+<     (iXOR, '0','0',opXOR,  "001",'0','0','0',"00","00"),  --xor=38
+<     (iNOR, '0','0',opNOR,  "001",'0','0','0',"00","00"),  --nor=39
+<     (NIL,  '1','0',opNOP,  "001",'0','0','0',"00","00"),  --40
+<     (NIL,  '1','0',opNOP,  "001",'0','0','0',"00","00"),  --41
+<     (SLT,  '0','0',opSLT,  "001",'0','0','0',"00","10"),  --slt=42
+<     (SLTU, '0','0',opSLTU, "001",'0','0','0',"00","00"),  --sltu=43
+<     (NIL,  '1','0',opNOP,  "001",'0','0','0',"00","00"),  --44
+<     (NIL,  '1','0',opNOP,  "001",'0','0','0',"00","00"),  --45
+<     (NIL,  '1','0',opNOP,  "001",'0','0','0',"00","00"),  --46
+<     (NIL,  '1','0',opNOP,  "001",'0','0','0',"00","00"),  --47
+<     (TGE,  '1','0',trGEQ,  "001",'1','0','0',"00","10"),  --tge=48
+<     (TGEU, '1','0',trGEU,  "001",'1','0','0',"00","10"),  --tgeu=49
+<     (TLT,  '1','0',trLTH,  "001",'1','0','0',"00","10"),  --tlt=50
+<     (TLTU, '1','0',trLTU,  "001",'1','0','0',"00","10"),  --tltu=51
+<     (TEQ,  '1','0',trEQU,  "001",'1','0','0',"00","10"),  --teq=52
+<     (NIL,  '1','0',opNOP,  "001",'0','0','0',"00","00"),  --53
+<     (TNE,  '1','0',trNEQ,  "001",'1','0','0',"00","10"),  --tne=54
+<     (NIL,  '1','0',opNOP,  "001",'0','0','0',"00","00"),  --55
+<     (NIL,  '1','0',opNOP,  "001",'0','0','0',"00","00"),  --56
+<     (NIL,  '1','0',opNOP,  "001",'0','0','0',"00","00"),  --57
+<     (NIL,  '1','0',opNOP,  "001",'0','0','0',"00","00"),  --58
+<     (NIL,  '1','0',opNOP,  "001",'0','0','0',"00","00"),  --59
+<     (NIL,  '1','0',opNOP,  "001",'0','0','0',"00","00"),  --60
+<     (NIL,  '1','0',opNOP,  "001",'0','0','0',"00","00"),  --61
+<     (NIL,  '1','0',opNOP,  "001",'0','0','0',"00","00"),  --62
+<     (NOP,  '1','0',opNOP,  "001",'0','0','0',"00","00")   --63
+<     );
+< 
+<   -- fields of the register-immediate control table (opcode=1)
+<   --   i:     instr_type;       -- instruction
+<   --   wreg:  std_logic;        -- register write=0
+<   --   selB:  std_logic;        -- B ALU input, reg=0 ext=1
+<   --   br_t:  t_comparison;     -- comparison type: ltz,gez
+<   --   muxC:  reg3;             -- select result mem=0 ula=1 jr=2 *al(pc+8)=3
+<   --   c_sel: reg2              -- select destination reg rd=0 rt=1 31=2
+<   --   trap:  std_logic;        -- trap on compare
+<   --   PCsel: reg2;             -- PCmux 0=PC+4 1=beq 2=j 3=jr
+<   --   excp:  reg2              -- stage with exception 0=no,1=rf,2=ex,3=mm
+<   
+<   constant rimm_table : t_rimm_mem := (
+<   -- i    wreg selB br_t muxC  csel trap PCsel excp
+<     (BLTZ, '1','0',cLTZ, "001","00",'0',"01","00"),  --0bltz
+<     (BGEZ, '1','0',cGEZ, "001","00",'0',"01","00"),  --1bgez
+<     (NIL,  '1','0',cNOP, "001","00",'0',"00","00"),  --2
+<     (NIL,  '1','0',cNOP, "001","00",'0',"00","00"),  --3
+<     (NIL,  '1','0',cNOP, "001","00",'0',"00","00"),  --4
+<     (NIL,  '1','0',cNOP, "001","00",'0',"00","00"),  --5
+<     (NIL,  '1','0',cNOP, "001","00",'0',"00","00"),  --6
+<     (NIL,  '1','0',cNOP, "001","00",'0',"00","00"),  --7
+<     (TGEI, '1','1',tGEQ, "001","00",'1',"00","10"),  --8tgei
+<     (TGEIU,'1','1',tGEU, "001","00",'1',"00","10"),  --9tgeiu
+<     (TLTI, '1','1',tLTH, "001","00",'1',"00","10"),  --10tlti
+<     (TLTIU,'1','1',tLTU, "001","00",'1',"00","10"),  --11tltiu
+<     (TEQI, '1','1',tEQU, "001","00",'1',"00","10"),  --12teqi
+<     (NIL,  '1','0',cNOP, "001","00",'0',"00","00"),  --13
+<     (TNEI, '1','1',tNEQ, "001","00",'1',"00","10"),  --14tnei
+<     (NIL,  '1','0',cNOP, "001","00",'0',"00","00"),  --15
+<     (BLTZAL,'0','0',cLTZ,"011","10",'0',"01","00"),  --16bltzal
+<     (BGEZAL,'0','0',cGEZ,"011","10",'0',"01","00"),  --17bgezal
+<     (NIL,  '1','0',cNOP, "001","00",'0',"00","00"),  --18
+<     (NIL,  '1','0',cNOP, "001","00",'0',"00","00"),  --19
+<     (NIL,  '1','0',cNOP, "001","00",'0',"00","00"),  --20
+<     (NIL,  '1','0',cNOP, "001","00",'0',"00","00"),  --21
+<     (NIL,  '1','0',cNOP, "001","00",'0',"00","00"),  --22
+<     (NIL,  '1','0',cNOP, "001","00",'0',"00","00"),  --23
+<     (NIL,  '1','0',cNOP, "001","00",'0',"00","00"),  --24
+<     (NIL,  '1','0',cNOP, "001","00",'0',"00","00"),  --25
+<     (NIL,  '1','0',cNOP, "001","00",'0',"00","00"),  --26
+<     (NIL,  '1','0',cNOP, "001","00",'0',"00","00"),  --27
+<     (NIL,  '1','0',cNOP, "001","00",'0',"00","00"),  --28
+<     (NIL,  '1','0',cNOP, "001","00",'0',"00","00"),  --29
+<     (NIL,  '1','0',cNOP, "001","00",'0',"00","00"),  --30
+<     (NOP,  '1','0',cNOP, "001","00",'0',"00","00")   --31
+<     );
+< 
+<   -- Table 8-30 Config Register Field Descriptions, pg 101
+<   constant CONFIG0 : reg32 := (
+<     '1'&        -- M, Config1 implemented = 1
+<     b"000"&     -- K23, with MMU, kseg2,kseg3 coherency algorithm
+<     b"000"&     -- KU, with MMU, kuseg coherency algorithm
+<     b"000000000"& -- Impl, implementation dependent = 0
+<     '0'&        -- BE, little endian = 0
+<     b"00"&      -- AT, MIPS32 = 0
+<     b"001"&     -- AR, Release 2 = 1
+<     b"001"&     -- MT, MMU type = 1, standard
+<     b"000"&     -- nil, always zero = 0
+<     '1'&        -- VI, Instruction Cache is virtual = 1
+<     b"000"      -- K0, Kseg0 coherency algorithm
+<     );
+< 
+<   -- Table 8-31 Config1 Register Field Descriptions, pg 103
+<   constant CONFIG1 : reg32 := (
+<     '0'&               -- M, Config2 not implemented = 0
+<     MMU_SIZE         & -- MMUsz, MMU entries minus 1
+<     IC_SETS_PER_WAY  & -- ICS, IC sets per way
+<     IC_LINE_SIZE     & -- ICL, IC line size
+<     IC_ASSOCIATIVITY & -- ICA, IC associativity
+<     DC_SETS_PER_WAY  & -- DCS, DC sets per way
+<     DC_LINE_SIZE     & -- DCL, DC line size = 3 16 bytes/line
+<     DC_ASSOCIATIVITY & -- DCA, DC associativity = 0 direct mapped
+<     '0'&        -- C2, No coprocessor 2 implemented = 0
+<     '0'&        -- MD, No MDMX ASE implemented = 0
+<     '0'&        -- PC, No performance counters implemented = 0
+<     '0'&        -- WR, No watch registers implemented = 0
+<     '0'&        -- CA, No code compression implemented = 0
+<     '0'&        -- EP, No EJTAG implemented = 0
+<     '0'         -- FP, No FPU implemented = 0
+<     );
+< 
+<   
+< -- pipeline ============================================================
+< begin
+---
+> -- pipeline ------------------------------------------------------------
+> begin
+720,721c678,686
+<   U_ifetch_stalled: FFD port map (clk => phi2, rst => rst, set => '1',
+<                                   D => mem_stall, Q => if_stalled);
+---
+>     
+>   U_if_st_reg: process(rst,clk4x)
+>   begin
+>     if rst = '0' then
+>       if_current_st <= st_start;
+>     elsif falling_edge(clk4x) then
+>       if_current_st <= if_next_st;
+>     end if;
+>   end process U_if_st_reg;
+723,728c688,730
+<   -- iaVal <= '1' when ((phi0 = '1' and if_stalled = '0')) else '0';
+<   
+<   i_aVal <= '0'; -- interface signal/port, always fetches a new instruction
+<   iaVal  <= '0'; -- internal signal
+<   
+<   rom_stall <= not(iaVal) and not(i_wait);
+---
+>   if_state <= mem_state'pos(if_current_st); -- for debugging only
+>     
+>   U_if_st_transitions: process(if_current_st,phi0,phi1,phi3,i_wait,ram_stall)
+>   begin
+>     case if_current_st is
+>       when st_start  =>                 -- 0
+>         iaVal <= '1';
+>         if phi0 /= '1' or ram_stall = '1' then
+>           if_next_st <= st_start;
+>         else
+>           if_next_st <= st_assert1;
+>         end if;
+>       when st_assert1  =>               -- 1
+>         iaVal <= '0';
+>         if i_wait = '1' then
+>           if_next_st <= st_assert2;
+>         else
+>           if_next_st <= st_waiting;
+>         end if;
+>       when st_assert2  =>               -- 2
+>         iaVal <= '0';
+>         if_next_st <= st_done;
+>       when st_waiting  =>               -- 4
+>         iaVal <= '0';
+>         if phi1 = '1' and i_wait = '1' then
+>           if_next_st <= st_assert2;
+>         else
+>           if_next_st <= st_waiting;
+>         end if;
+>       when st_done  =>                  -- 3
+>         iaVal <= '0';
+>         if ram_stall /= '0' then        -- DataMem stalled
+>           if_next_st <= st_done;
+>         elsif ram_stall = '0' and phi3 = '1' then
+>           if_next_st <= st_start;
+>         else
+>           if_next_st <= st_done;
+>         end if;
+>       when others =>
+>         iaVal    <= 'X';               -- to help synthesis
+>         assert false report "I_FETCH stateMachine broken" severity failure;
+>     end case;
+>   end process U_if_st_transitions;
+730,731c732
+<   mem_stall   <= ram_stall or rom_stall;
+<   not_stalled <= not(mem_stall);
+---
+>   i_aVal <= iaVal;
+732a734
+>   rom_stall <= not(iaVal) and not(i_wait);
+738,746c740,762
+<   pipe_stall <= rom_stall or ram_stall or jr_stall or br_stall or
+<                 sw_stall  or lw_stall  or tr_stall  or exception_stall;
+< 
+<   
+<   PCload   <= '1' when pipe_stall = '1' else '0';
+<   IF_RF_ld <= '1' when pipe_stall = '1' else '0';
+<   RF_EX_ld <= mem_stall; -- or exception_stall;
+<   EX_MM_ld <= mem_stall;
+<   MM_WB_ld <= mem_stall;
+---
+>   PCload <= '1' when ( (rom_stall = '1') or (ram_stall = '1') or
+>                        (jr_stall = '1')  or (br_stall = '1')  or
+>                        (sw_stall = '1')  or (tr_stall = '1')  or
+>                        (exception_stall = '1') )
+>             else (not rst);
+>   IF_RF_ld <= '1' when ( (rom_stall = '1') or (ram_stall = '1') or
+>                          (jr_stall = '1')  or (br_stall = '1')  or
+>                          (sw_stall = '1')  or (tr_stall = '1')  or
+>                          (exception_stall = '1') )
+>               else '0';
+>   RF_EX_ld <= rom_stall or ram_stall; -- or exception_stall;
+>   EX_MM_ld <= rom_stall or ram_stall;
+>   MM_WB_ld <= rom_stall or ram_stall;
+> 
+>   
+>   excp_IF_RF_ld <= '1' when ( (rom_stall = '1') or (ram_stall = '1') or
+>                               (jr_stall = '1')  or (br_stall = '1')  or
+>                               (sw_stall = '1')  or (tr_stall = '1')  or
+>                               (exception_stall = '1') )
+>                    else '0';
+>   excp_RF_EX_ld <= rom_stall or ram_stall; -- or exception_stall;
+>   excp_EX_MM_ld <= rom_stall or ram_stall;
+>   excp_MM_WB_ld <= rom_stall or ram_stall;
+747a764
+>   not_stalled <= not(rom_stall or ram_stall);
+749,754d765
+<   excp_IF_RF_ld <= '1' when pipe_stall = '1' else '0';
+<   excp_RF_EX_ld <= mem_stall; -- or exception_stall;
+<   excp_EX_MM_ld <= mem_stall;
+<   excp_MM_WB_ld <= mem_stall;
+< 
+< 
+763,768c774,778
+<     PCinp <= PCinp_noExcp     when PCsel_EXC_none, -- no exception
+<              EPC              when PCsel_EXC_EPC,  -- ERET
+<              x_EXCEPTION_0000 when PCsel_EXC_0000, -- TLBrefill entry point
+<              x_EXCEPTION_0180 when PCsel_EXC_0180, -- general exception handler
+<              x_EXCEPTION_0200 when PCsel_EXC_0200, -- separate interrupt handler
+<              x_EXCEPTION_BFC0 when PCsel_EXC_BFC0, -- NMI or soft-reset handler
+---
+>     PCinp <= PCinp_noExcp     when b"000",  -- no exception
+>              EPC              when b"001",  -- ERET
+>              x_EXCEPTION_0180 when b"010",  -- single exception handler
+>              x_EXCEPTION_0200 when b"011",  -- separate interrupt handler
+>              x_EXCEPTION_0000 when b"100",  -- NMI or soft-reset handler
+770,772d779
+<              -- x_EXCEPTION_0100 when PCsel_EXC_0100, -- Cache Error
+<   
+<   PC_abort <= PC(1 downto 0) /= b"00";
+774,776c781,783
+<   IF_excp_type <= IFaddressError when PC_abort else exNOP;
+< 
+<   
+---
+>   IF_excp_type <= IFaddressError when PC(1 downto 0) /= b"00" else
+>                   exNOP;
+>     
+781a789
+>   -- U_INCPC: adder32 port map (x"00000004", PC_aligned, PCincd);
+783a792,793
+>   
+>   i_addr <= PC_aligned;    -- fetch instruction from aligned address
+785,798c795,799
+< 
+<   -- uncomment this when NOT making use of the TLB
+<   -- i_addr <= PC_aligned;    -- fetch instruction from aligned address
+< 
+<   -- uncomment this when making use of the TLB
+<   i_addr <= phy_i_addr;
+< 
+<   nullify_fetch <= (MM_tlb_exception and not(MM_tlb_stage_mm));
+< 
+<   instr_fetched(25 downto 0)  <= instr(25 downto 0);
+<   instr_fetched(31 downto 26) <= instr(31 downto 26)
+<                                  when not(nullify_fetch or PC_abort
+<                                           or MM_addrError)
+<                                  else NULL_INSTRUCTION(31 downto 26); -- x"fc";
+---
+>   abort <= MM_abort or WB_abort;
+>   
+>   instr_fetched <= instr when (nullify = '0' and abort = '0'
+>                                and PC(1 downto 0) = b"00") else
+>                    NULL_INSTRUCTION; -- x"fc000000";
+803c804
+<               instr_fetched, RF_instruction);
+---
+>               instr_fetched, instruction);
+808,822c809,819
+<   annul_1 <= BOOL2SL(nullify or MM_addrError);
+<   U_NULLIFY_TWICE: FFD port map (clk, rst, '1', annul_1, annul_2);
+<   annul_twice <= annul_1 or annul_2;
+<   
+<   opcode <= RF_instruction(31 downto 26) when annul_twice = '0' else
+<             NULL_INSTRUCTION (31 downto 26);
+<   
+<   a_rs      <= RF_instruction(25 downto 21);
+<   a_rt      <= RF_instruction(20 downto 16);
+<   a_rd      <= RF_instruction(15 downto 11);
+<   shamt     <= RF_instruction(10 downto  6);
+<   func      <= RF_instruction( 5 downto  0);
+<   displ16   <= RF_instruction(15 downto  0);
+<   syscall_n <= RF_instruction(25 downto  6);
+< 
+---
+>   instr_valid <= instruction when (nullify = '0' and abort = '0') else
+>                  NULL_INSTRUCTION;
+>   
+>   opcode    <= instr_valid(31 downto 26);
+>   a_rs      <= instr_valid(25 downto 21);
+>   a_rt      <= instr_valid(20 downto 16);
+>   a_rd      <= instr_valid(15 downto 11);
+>   shamt     <= instr_valid(10 downto  6);
+>   func      <= instr_valid( 5 downto  0);
+>   displ16   <= instr_valid(15 downto  0);
+>   syscall_n <= instr_valid(25 downto  6);
+828c825
+<     func_table( 63 );                   -- null instruction (sigs inactive)
+---
+>     func_table( 63 );                   -- empty and void table entry
+832c829
+<     rimm_table( 31 );                   -- null instruction (sigs inactive)
+---
+>     rimm_table( 31 );                   -- empty and void table entry
+841,844c838,841
+<   RF_is_delayslot <= '1' when ((ctrl_word.PCsel  /= "00") or
+<                                (funct_word.PCsel /= "00") or
+<                                (rimm_word.PCsel  /= "00"))
+<                      else '0';
+---
+>   next_instr_in_delay_slot <= '1' when ((ctrl_word.PCsel  /= "00") or
+>                                         (funct_word.PCsel /= "00") or
+>                                         (rimm_word.PCsel  /= "00"))
+>                               else '0';
+847c844
+<   RF_STOP_SIMULATION: process (rst, phi2, opcode, func,
+---
+>   RF_STOP_SIMULATION: process (rst, phi3, opcode, func,
+852c849
+<     if rst = '1' and phi2 = '1' then
+---
+>     if rst = '1' and phi3 = '1' then
+856c853,855
+<         report LF & "cMIPS BREAKPOINT at PC="& SLV32HEX(RF_PC) &
+---
+>         report 
+>         LF & "Core " & integer'image(coreNumber) & LF &
+>         "cMIPS BREAKPOINT at PC="& SLV32HEX(RF_PC) &
+864,867c863,867
+<         report LF & "ABORTED at EPC="& SLV32HEX(EPC) &
+<         " bad="& SLV32HEX(BadVAddr) &
+<         " opc="& SLV2STR(opcode) & " wait=" & SLV2STR(syscall_n(7 downto 0)) &
+<         " instr=" & SLV32HEX(RF_instruction) &
+---
+>         report 
+>         LF & "Core " & integer'image(coreNumber) & LF & 
+>         "INVALID REFERENCE at PC="& SLV32HEX(EPC) &
+>         " opc="& SLV2STR(opcode) & " fun=" & SLV2STR(func) &
+>         " cause(6..2)=" & SLV2STR(instr_valid(10 downto 6)) & 
+874,875c874,877
+<           report LF & "INVALID OPCODE at PC="& SLV32HEX(RF_PC) &
+<           " opc="& SLV2STR(opcode) & " instr=" & SLV32HEX(RF_instruction) &
+---
+>           report  
+>           LF & "Core " & integer'image(coreNumber) & LF & 
+>           "INVALID OPCODE at PC="& SLV32HEX(RF_PC) &
+>           " opc="& SLV2STR(opcode) & " instr=" & SLV32HEX(instr_valid) &
+880,881c882,885
+<           report LF & "INVALID OPCODE at PC="& SLV32HEX(RF_PC) &
+<           " opc="& SLV2STR(opcode) & " instr=" & SLV32HEX(RF_instruction) &
+---
+>           report  
+>           LF & "Core " & integer'image(coreNumber) & LF & 
+>           "INVALID OPCODE at PC="& SLV32HEX(RF_PC) &
+>           " opc="& SLV2STR(opcode) & " instr=" & SLV32HEX(instr_valid) &
+886,887c890,893
+<           report LF & "INVALID OPCODE at PC="& SLV32HEX(RF_PC) &
+<           " opc="& SLV2STR(opcode) & " instr=" & SLV32HEX(RF_instruction) &
+---
+>           report  
+>           LF & "Core " & integer'image(coreNumber) & LF & 
+>           "INVALID OPCODE at PC="& SLV32HEX(RF_PC) &
+>           " opc="& SLV2STR(opcode) & " instr=" & SLV32HEX(instr_valid) &
+898,899c904,905
+<   U_regs: reg_bank                      -- phi1=read_early, clk=write_late
+<     port map (clk, phi1, WB_wreg, a_rs,a_rt, WB_a_c,WB_C, regs_A,regs_B);
+---
+>   U_regs: reg_bank
+>     port map (phi3, phi2, WB_wreg, a_rs,a_rt, WB_a_c,WB_C, regs_A,regs_B);
+911c917
+<   j_target <= RF_PCincd(31 downto 28) & RF_instruction(25 downto 0) & b"00";
+---
+>   j_target <= RF_PCincd(31 downto 28) & instr_valid(25 downto 0) & b"00";
+914d919
+<     variable i_dbg_jr_stall : integer := 0;  -- debug only
+920d924
+<       i_dbg_jr_stall := 1;
+924,929d927
+<       i_dbg_jr_stall := 2;
+<     elsif ( (funct_word.PCsel = b"11")and       -- 2nd load-delay slot
+<             MM_is_load and
+<             (MM_a_c = a_rs)and(MM_wreg = '0')and(MM_a_c /= b"00000") ) then
+<       jr_stall <= '1';
+<       i_dbg_jr_stall := 3;
+932,934c930
+<       i_dbg_jr_stall := 0;
+<     end if;
+<     dbg_jr_stall <= i_dbg_jr_stall;
+---
+>     end if; 
+936,948d931
+<   
+<   
+<   RF_LD_DELAY_SLOT: process (a_rs,a_rt,EX_a_c,EX_wreg,EX_is_load)
+<   begin
+<     if ( EX_is_load and
+<          (EX_wreg = '0') and (EX_a_c /= b"00000") and
+<          ( (EX_a_c =  a_rs)or(EX_a_c = a_rt) ) ) then
+<       lw_stall <= '1';
+<     else
+<       lw_stall <= '0';
+<     end if;
+<   end process RF_LD_DELAY_SLOT;
+<   
+949a933
+>   
+955c939
+<         is_load  <= TRUE;
+---
+>         is_load <= '1';
+959,962c943,944
+<         is_load  <= FALSE;
+<       when others =>
+<         is_load <= FALSE;
+<         is_store := FALSE;
+---
+>         is_load <= '0';
+>       when others => is_load <= '0'; is_store := FALSE;
+964c946
+<     if ( is_store and EX_is_load and
+---
+>     if ( is_store and (EX_is_load = '1') and
+974,977c956
+<                                  MM_aVal,MM_result,MM_cop0_val,MM_is_MFC0,
+<                                  regs_A,regs_B,is_branch,
+<                                  is_SC, LL_SC_abort)
+<     variable rs_stall, rt_stall : boolean;
+---
+>                                 MM_aVal,MM_result,regs_A,regs_B,is_branch)
+978a958
+>     br_stall <= '0';
+980c960
+<     if ( (is_branch = '1') and          -- forward_A
+---
+>     if ( (is_branch = '1') and          -- forward_A:
+982,998c962,967
+<       if is_SC then
+<         eq_fwd_A <= x"0000000" & b"000" & not(LL_SC_abort);
+<         rs_stall := FALSE;
+<       else
+<         eq_fwd_A <= regs_A;
+<         rs_stall := TRUE;
+<       end if;
+<     elsif ( (MM_wreg = '0') and (MM_a_c = a_rs) and (MM_a_c /= b"00000") ) then
+<       if ( (MM_aVal = '0') and (is_branch = '1') ) then   -- LW load-delay slot
+<         eq_fwd_A <= regs_A;
+<         rs_stall := TRUE;
+<       elsif MM_is_MFC0 then          -- non-LW
+<         eq_fwd_A <= MM_cop0_val;
+<         rs_stall := FALSE;
+<       else
+<         eq_fwd_A <= MM_result;
+<         rs_stall := FALSE;
+---
+>       br_stall <= '1';
+>       eq_fwd_A <= regs_A;
+>     elsif ((MM_wreg = '0') and (MM_a_c = a_rs) and (MM_a_c /= b"00000")
+>            and (MM_aVal = '0')) then    -- LW load-delay slot
+>       if (is_branch = '1') then
+>         br_stall <= '1';
+999a969,972
+>       eq_fwd_A <= regs_A;
+>     elsif ((MM_wreg = '0') and (MM_a_c = a_rs) and (MM_a_c /= b"00000")
+>            and (MM_aVal = '1')) then    -- non-LW
+>       eq_fwd_A <= MM_result;
+1002d974
+<       rs_stall := FALSE;
+1005c977
+<     if ( (is_branch = '1') and          -- forward_B
+---
+>     if ( (is_branch = '1') and          -- forward_B:
+1007,1023c979,984
+<       if is_SC then
+<         eq_fwd_B <= x"0000000" & b"000" & not(LL_SC_abort);
+<         rt_stall := FALSE;
+<       else
+<         eq_fwd_B <= regs_B;
+<         rt_stall := TRUE;
+<       end if;
+<     elsif ( (MM_wreg = '0') and (MM_a_c = a_rt) and (MM_a_c /= b"00000") ) then
+<       if ( (MM_aVal = '0') and (is_branch = '1') ) then   -- LW load-delay slot
+<         eq_fwd_B <= regs_B;
+<         rt_stall := TRUE;
+<       elsif MM_is_MFC0 then          -- non-LW
+<         eq_fwd_B <= MM_cop0_val;
+<         rt_stall := FALSE;
+<       else
+<         eq_fwd_B <= MM_result;
+<         rt_stall := FALSE;
+---
+>       br_stall <= '1';
+>       eq_fwd_B <= regs_B;
+>     elsif ((MM_wreg = '0') and (MM_a_c = a_rt) and (MM_a_c /= b"00000")
+>            and (MM_aVal = '0')) then    -- LW load-delay slot
+>       if (is_branch = '1') then
+>         br_stall <= '1';
+1024a986,989
+>       eq_fwd_B <= regs_B;
+>     elsif ((MM_wreg = '0') and (MM_a_c = a_rt) and (MM_a_c /= b"00000")
+>            and (MM_aVal = '1')) then    -- non-LW
+>       eq_fwd_B <= MM_result;
+1027d991
+<       rt_stall := FALSE;
+1029,1031d992
+< 
+<     br_stall <= BOOL2SL(rs_stall or rt_stall);
+<   
+1034d994
+<   
+1040,1041c1000,1001
+<   RF_BR_tgt_select: process (br_equal,br_negative,br_eq_zero,
+<                              ctrl_word,rimm_word) 
+---
+>   RF_BRselect: process (br_equal,br_negative,br_eq_zero,
+>                         ctrl_word,rimm_word) 
+1043d1002
+<     variable i_br_opr : reg2;
+1047,1048d1005
+< 
+<     i_br_opr := b"01";          -- assume not taken, PC+4 + 4 (delay slot)
+1050,1056c1007,1015
+<       when cNOP =>              -- no branch, PC+4
+<         i_br_opr := b"00";
+<       when cEQU =>              -- beq
+<         if br_equal then i_br_opr := b"10";  -- br_target;
+<         end if;
+<       when cNEQ =>              -- bne
+<         if not(br_equal) then i_br_opr := b"10";  -- br_target;
+---
+>       when cNOP =>                     -- no branch, PC+4
+>         br_opr <= b"00";  -- x"00000000";
+>       when cEQU =>                     -- beq
+>         if br_equal then br_opr <= b"10";  -- br_target;
+>         else             br_opr <= b"01";  -- 4, PC+4+4 (delay slot)
+>         end if;
+>       when cNEQ =>                     -- bne
+>         if (not br_equal) then br_opr <= b"10";  -- br_target;
+>         else                   br_opr <= b"01";  -- x"00000004";
+1059c1018,1019
+<         if (br_negative or br_eq_zero) then i_br_opr := b"10";  -- br_target;
+---
+>         if (br_negative or br_eq_zero) then br_opr <= b"10";  -- br_target;
+>         else                                br_opr <= b"01";  -- 4
+1062c1022,1023
+<         if not(br_negative or br_eq_zero) then i_br_opr := b"10";  -- br_target;
+---
+>         if not(br_negative or br_eq_zero) then br_opr <= b"10";  -- br_tgt;
+>         else                                   br_opr <= b"01";  -- 4
+1067c1028,1029
+<             if br_negative then i_br_opr := b"10";  -- br_target;
+---
+>             if (br_negative) then br_opr <= b"10";  -- br_target;
+>             else                  br_opr <= b"01";  -- x"00000004";
+1070c1032,1033
+<             if not(br_negative) then i_br_opr := b"10";  -- br_target;
+---
+>             if (not br_negative) then br_opr <= b"10";  -- br_target;
+>             else                      br_opr <= b"01";  -- x"00000004";
+1073c1036
+<             i_br_opr := b"00";    -- x"00000000";
+---
+>             br_opr <= b"00";    -- x"00000000";
+1076c1039
+<         i_br_opr := b"00";        -- x"00000000";
+---
+>         br_opr <= b"00";        -- x"00000000";
+1078d1040
+<     br_opr <= i_br_opr;
+1082c1044
+<   end process RF_BR_tgt_select;
+---
+>   end process RF_BRselect;
+1083a1046,1050
+>   with br_opr select
+>     br_operand <= x"00000004" when b"01",
+>                   displ32(29 downto 0) & b"00" when b"10",
+>                   x"00000000" when others;
+>   
+1085a1053
+>   U_BR_ADDDER: mf_alt_adder port map (RF_PCincd, br_operand, br_target);
+1087,1096d1054
+<   -- branch target computation is in the citical path; add early, select late
+<   br_addend <= displ32(29 downto 0) & b"00";
+<   U_BR_tgt_pl_4:     mf_alt_add_4 port map (RF_PCincd, br_tgt_pl4);
+<   U_BR_tgt_pl_displ: mf_alt_adder port map (RF_PCincd, br_addend, br_tgt_displ);
+<     
+<   with br_opr select
+<     br_target <= br_tgt_pl4    when b"01",
+<                  br_tgt_displ  when b"10",
+<                  RF_PCincd     when others;
+<   
+1099,1100c1057,1058
+<                             func,shamt, a_rs,a_rd, STATUS,
+<                             RF_excp_type,RF_instruction,mem_excp_type)
+---
+>                             func,shamt, a_rs,a_rd, STATUS, MM_abort,
+>                             IF_excp_type,RF_excp_type,MM_excp_type)
+1131,1135c1089
+<             when iSLL    =>
+<               if RF_instruction = x"000000c0" then 
+<                 i_exception := exEHB;
+<               end if; 
+<             when others  => i_exception := exNOP;
+---
+>             when others  => i_exception := exTRAP;
+1149c1103
+<           i_exception := exNOP;
+---
+>           i_exception := exTRAP;
+1163,1166d1116
+<               when b"000001" => i_exception := exTLBR;
+<               when b"000010" => i_exception := exTLBWI;
+<               when b"000110" => i_exception := exTLBWR;
+<               when b"001000" => i_exception := exTLBP;
+1168d1117
+<               when b"011111" => i_exception := exDERET;
+1175,1176c1124,1125
+<                 i_exception := exEI;
+<                 i_wreg := '0';
+---
+>               i_exception := exEI;
+>               i_wreg := '0';
+1178,1179c1127,1128
+<                 i_exception := exDI;
+<                 i_wreg := '0';
+---
+>               i_exception := exDI;
+>               i_wreg := '0';
+1190,1203d1138
+<       when b"011100" =>                 -- special2
+<         i_wreg := ctrl_word.wreg;
+<         selB   <= ctrl_word.selB;
+<         muxC   <= ctrl_word.muxC;
+<         i_csel := ctrl_word.c_sel;
+<         PCsel  <= ctrl_word.PCsel;
+<         case func is
+<           when b"000010" =>             -- MUL R[rd] <= R[rs]*R[rt]
+<             i_oper := opMUL;
+<           when others =>
+<             i_oper := opNOP;
+<             i_exception := exRESV_INSTR;
+<         end case;            
+< 
+1234a1170,1175
+>           when b"111111" =>
+>             if MM_abort = '1' then
+>               i_exception := MM_excp_type;
+>             else
+>               i_exception := RF_excp_type;      -- delayed by pipe
+>             end if;
+1305,1306c1246
+<   EX_FORWARDING_ALU: process (EX_a_rs,EX_a_rt,EX_a_c, EX_A,EX_B,
+<                               is_exception, MM_ll_sc_abort, MM_is_SC,
+---
+>   EX_FORWARDING_ALU: process (EX_a_rs,EX_a_rt,EX_a_c,
+1308c1248
+<                               MM_is_MFC0,MM_cop0_val, MM_result,WB_C)
+---
+>                               EX_A,EX_B,MM_result,WB_C)
+1313,1319c1253
+<       if MM_is_MFC0 then
+<         i_A := MM_cop0_val;
+<       elsif MM_is_SC then
+<         i_A := x"0000000" & b"000" & not( BOOL2SL(MM_ll_sc_abort) );
+<       else 
+<         i_A := MM_result;
+<       end if;
+---
+>       i_A := MM_result;
+1329d1262
+<     
+1332,1338c1265
+<       if MM_is_MFC0 then
+<         i_B := MM_cop0_val;
+<       elsif MM_is_SC then
+<         i_B := x"0000000" & b"000" & not( BOOL2SL(MM_ll_sc_abort) );
+<       else 
+<         i_B := MM_result;
+<       end if;
+---
+>       i_B := MM_result;
+1355,1429c1282,1285
+<   
+<   -- this adder performs address calculation so the TLB can be checked during
+<   --   EX and thus signal an exception as early as possible
+<   U_VIR_ADDR_ADD: mf_alt_adder port map (alu_inp_A, EX_displ32, v_addr);
+<   
+< 
+<   U_EX_ADDR_ERR_EXCP: process(EX_mem_t,EX_aVal,EX_wrmem, v_addr)
+<     variable i_stage_mm, i_addrError : boolean;
+<     variable i_excp_type : exception_type;
+<   begin
+< 
+<     case EX_mem_t(1 downto 0) is  -- xx,by,hf,wd
+<       when b"11" =>
+<         if ( EX_mem_t(3) = '0' and         -- normal LOAD, not LWL,LWR
+<              EX_aVal = '0' and v_addr(1 downto 0) /= b"00" ) then
+<           if EX_wrmem = '1' then
+<             i_excp_type := MMaddressErrorLD;
+<           else
+<             i_excp_type := MMaddressErrorST;
+<           end if;
+<           i_addrError := TRUE;
+<           i_stage_mm  := TRUE;
+<         else
+<           i_excp_type  := exNOP;
+<           i_addrError  := FALSE;
+<           i_stage_mm   := FALSE;
+<         end if;
+< 
+<       when b"10" =>                        -- LH*, SH
+<         if EX_aVal = '0' and v_addr(0) /= '0' then
+<           if EX_wrmem = '1' then
+<             i_excp_type := MMaddressErrorLD;
+<           else
+<             i_excp_type := MMaddressErrorST;
+<           end if;
+<           i_addrError := TRUE;
+<           i_stage_mm  := TRUE;
+<         else
+<           i_excp_type  := exNOP;
+<           i_addrError  := FALSE;
+<           i_stage_mm   := FALSE;
+<         end if;
+<         
+<       when others =>                      -- LB*, SB
+<         i_excp_type  := exNOP;
+<         i_addrError  := FALSE;
+<         i_stage_mm   := FALSE;
+<     end case;
+< 
+<     mem_excp_type    <= i_excp_type;
+<     addrErr_stage_mm <= i_stage_mm;
+<     addrError        <= i_addrError;
+<     
+<     -- assert mem_excp_type = exNOP  -- DEBUG
+<     --   report "SIMULATION ERROR -- data addressing error: " &
+<     --   integer'image(exception_type'pos(mem_excp_type)) &
+<     --   " at address: " & SLV32HEX(v_addr)
+<     --   severity error;
+< 
+<   end process U_EX_ADDR_ERR_EXCP; ----------------------------------
+< 
+< 
+<   -- uncomment this when making use of the TLB CHANGE
+<   EX_addr <= phy_d_addr;                -- with TLB
+< 
+<   -- uncomment this when NOT making use of the TLB
+<   -- EX_addr <= v_addr;                    -- without TLB  
+< 
+<   -- assert ( (phy_d_addr = v_addr) and (EX_aVal = '0') )  -- DEBUG
+<   --  report "mapping mismatch V:P "&SLV32HEX(v_addr)&":"&SLV32HEX(phy_d_addr);
+< 
+< 
+<   EX_wreg <= EX_wreg_pre                  -- movz,movn, move/DO_NOT move
+<              or ( BOOL2SL(nullify) and not(MM_is_delayslot) );
+<                                           -- abort wr if prev excep in EX
+---
+>   EX_wreg <= '1' when ((EX_move = '1' and alu_move_ok = '0')
+>                        or (abort = '1') -- abort write if exception in MEM
+>                        or nullify_EX = '1') -- abort wr if prev excep in EX
+>              else EX_wreg_pre;          -- movz,movn, move/DO_NOT move
+1432,1435c1288,1290
+<                    or BOOL2SL(abort_ref)  -- abort write if exception in MEM
+<                    or LL_SC_abort         -- SC is to be killed
+<                    or ( BOOL2SL(nullify) and not(MM_is_delayslot) );
+<                                           -- abort memWrite if exception in EX
+---
+>                    or nullify_EX        -- abort write if exception in EX
+>                    or LL_SC_abort       -- abort write if SC fails
+>                    or abort;            -- abort write if exception in MEM
+1438,1444c1293,1295
+<                   or BOOL2SL(abort_ref)  -- abort ref if exception in MEM
+<                   or LL_SC_abort         -- SC is to be killed
+<                   or ( BOOL2SL(nullify) and not(MM_is_delayslot) );
+<                                          -- abort memRef if previous excep in EX
+< 
+<   abort_ref <= (addrError or (tlb_exception and tlb_stage_mm));
+< 
+---
+>                   or nullify_EX         -- abort ref if previous excep in EX
+>                   or abort;             -- abort ref if exception in MEM
+>   
+1446c1297
+<   -- ----------------------------------------------------------------------
+---
+> -- -----------------------------------------------------------------
+1451c1302
+<               EX_mem_t,MM_mem_t, EX_is_load,MM_is_load, 
+---
+>               EX_mem_t,MM_mem_t,
+1453,1455c1304
+<               result,MM_result, EX_addr,MM_addr,
+<               HI,MM_HI, LO,MM_LO,
+<               alu_move_ok,MM_alu_move_ok, EX_move,MM_move,
+---
+>               result,MM_result, HI,MM_HI, LO,MM_LO,
+1459c1308
+<   -- MEMORY ---------------------------------------------------------------
+---
+>   -- MEMORY ------------------------------------------------
+1462,1471c1311,1318
+<   U_dmem_stalled: FFD port map (clk => phi2, rst => rst, set => '1',
+<                                 D => mem_stall, Q => mm_stalled);
+< 
+<   d_aVal <= MM_aVal;  -- interface signal/port
+<   daVal  <= MM_aVal;  -- internal signal
+<   
+<   ram_stall <= not(daVal) and not(d_wait);
+<   -- end DATA_BUS_STATE_MACHINE -------------------------------------
+<  
+<   wr <= MM_wrmem;                -- abort write if SC fails
+---
+>   U_db_st_reg: process(rst,clk4x)
+>   begin
+>     if rst = '0' then
+>       db_current_st <= st_start;
+>     elsif falling_edge(clk4x) then
+>       db_current_st <= db_next_st;
+>     end if;
+>   end process U_db_st_reg;
+1473,1477c1320
+<   
+<   rd_data_raw <= data_inp when (MM_wrmem = '1' and MM_aVal = '0') else
+<                  (others => 'X');
+<   
+<   d_addr <= MM_addr(31 downto 2) & d_addr_pre;
+---
+>   db_state <= mem_state'pos(db_current_st);  -- for debugging only
+1479,1481c1322,1323
+<   MM_MEM_CTRL_INTERFACE: process(MM_mem_t, MM_aVal, MM_addr(1 downto 0))
+<     variable i_d_addr   : reg2;
+<     variable i_byte_sel : reg4;
+---
+>   U_db_st_transitions: process(db_current_st, phi0,phi3,
+>                                d_wait, rom_stall, MM_aVal, abort)
+1483,1492c1325,1357
+< 
+<     case MM_mem_t(1 downto 0) is                -- xx,by,hf,wd
+<       when b"11" =>
+<         i_byte_sel := b"1111";                  -- LW, SW, LWL, LWR
+<         i_d_addr   := b"00";                    -- align reference
+<         
+<       when b"10" =>
+<         i_d_addr     := MM_addr(1) & '0';       -- align reference
+<         if MM_addr(1) = '0' then                -- LH*, SH
+<           i_byte_sel := b"0011";
+---
+>     case db_current_st is
+>       when st_start  =>                 -- 0
+>         daVal <= '1';
+>         if phi0 /= '1' or d_wait = '0' or rom_stall = '1' then
+>           db_next_st <= st_start;                 -- IF/IO stalled, addrError
+>         elsif MM_aVal = '0' and abort = '0' then  -- no AddrError
+>           db_next_st <= st_assert1;     -- and this is a load or store
+>         else
+>           db_next_st <= st_start;
+>         end if;
+>       when st_assert1  =>               -- 1
+>         daVal <= '0';
+>         if d_wait = '1' then
+>           db_next_st <= st_assert2;
+>         else
+>           db_next_st <= st_waiting;
+>         end if;
+>       when st_assert2  =>               -- 2
+>         daVal <= '0';
+>         db_next_st <= st_done;
+>       when st_waiting  =>               -- 4
+>         daVal <= '0';
+>         if d_wait = '1' then            -- can be many wait-states
+>           db_next_st <= st_done;
+>         else
+>           db_next_st <= st_waiting;
+>         end if;
+>       when st_done  =>                  -- 3
+>         daVal <= '0';
+>         if rom_stall /= '0' then        -- InstrMem stalled
+>           db_next_st <= st_done;
+>         elsif rom_stall = '0' and phi3 = '1' then
+>           db_next_st <= st_start;
+1494c1359
+<           i_byte_sel := b"1100";
+---
+>           db_next_st <= st_done;
+1496,1505d1360
+< 
+<       when b"01" =>                             -- LB*, SB
+<         i_d_addr := MM_addr(1 downto 0);
+<         case MM_addr(1 downto 0) is
+<           when b"00"  => i_byte_sel := b"0001";
+<           when b"01"  => i_byte_sel := b"0010";
+<           when b"10"  => i_byte_sel := b"0100";
+<           when others => i_byte_sel := b"1000";
+<         end case;
+<         
+1507,1509c1362,1363
+<         i_d_addr   := (others => 'X');          -- MM_addr;
+<         i_byte_sel := b"0000";
+< 
+---
+>         daVal <= 'X';          -- to help synthesis
+>         assert false report "dataBus stateMachine broken" severity failure;
+1510a1365
+>   end process U_db_st_transitions;
+1512,1515c1367
+<     d_addr_pre <= i_d_addr;
+<     b_sel      <= i_byte_sel;
+< 
+<   end process MM_MEM_CTRL_INTERFACE; ---------------------------------
+---
+>   d_aVal <= daVal;
+1516a1369,1370
+>   ram_stall <= not(daVal) and not(d_wait);
+>   -- end DATA_BUS_STATE_MACHINE -------------------------------------
+1518c1372,1378
+<   MM_MEM_DATA_INTERFACE: process(MM_mem_t, MM_addr, rd_data_raw)
+---
+>  
+>   wr <= MM_wrmem or abort;
+>   
+>   rd_data_raw <= data_inp when (MM_wrmem = '1' and MM_aVal = '0') else
+>                  (others => 'X');
+>   
+>   MM_MEM_INTERFACE: process(MM_mem_t,MM_aVal,MM_wrmem, MM_result, rd_data_raw)
+1519a1380
+>     variable i_byte_sel : reg4;
+1527a1389,1390
+>     MM_addr_error <= exNOP;
+>     
+1529a1393
+>         i_byte_sel := b"1111";              -- LW, SW, LWL, LWR
+1530a1395
+>         d_addr     <= MM_result(31 downto 2) & b"00";   -- align reference
+1531a1397,1405
+>         if ( MM_mem_t(3) = '0' and          -- normal LOAD, not LWL,LWR
+>              MM_aVal = '0' and MM_result(1 downto 0) /= b"00" ) then
+>           if MM_wrmem = '1' then
+>             MM_addr_error <= MMaddressErrorLD;
+>           else
+>             MM_addr_error <= MMaddressErrorST;
+>           end if;
+>         end if;
+> 
+1533c1407,1409
+<         if MM_addr(1) = '0' then                      -- LH*, SH
+---
+>         d_addr     <= MM_result(31 downto 1) & '0' ;    -- align reference
+>         if MM_result(1) = '0' then                      -- LH*, SH
+>           i_byte_sel := b"0011";
+1535a1412
+>           i_byte_sel := b"1100";
+1543a1421,1429
+>         if MM_aVal = '0' and MM_result(0) /= '0' then
+>           if MM_wrmem = '1' then
+>             MM_addr_error <= MMaddressErrorLD;
+>           else
+>             MM_addr_error <= MMaddressErrorST;
+>           end if;
+>         else
+>         end if;
+>         
+1545,1549c1431,1440
+<         case MM_addr(1 downto 0) is
+<           when b"00"  => i_byte := rd_data_raw(7  downto  0);
+<           when b"01"  => i_byte := rd_data_raw(15 downto  8);
+<           when b"10"  => i_byte := rd_data_raw(23 downto 16);
+<           when others => i_byte := rd_data_raw(31 downto 24);
+---
+>         d_addr     <= MM_result;
+>         case MM_result(1 downto 0) is
+>           when b"00"  => i_byte_sel := b"0001";
+>                          i_byte     := rd_data_raw(7  downto  0);
+>           when b"01"  => i_byte_sel := b"0010";
+>                          i_byte     := rd_data_raw(15 downto  8);
+>           when b"10"  => i_byte_sel := b"0100";
+>                          i_byte     := rd_data_raw(23 downto 16);
+>           when others => i_byte_sel := b"1000";
+>                          i_byte     := rd_data_raw(31 downto 24);
+1556c1447
+<         
+---
+> 
+1557a1449,1450
+>         d_addr     <= "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"; -- MM_result;
+>         i_byte_sel := b"0000";
+1561a1455
+>     b_sel    <= i_byte_sel;
+1564c1458,1464
+<   end process MM_MEM_DATA_INTERFACE; ---------------------------------
+---
+>     -- assert MM_addr_error = exNOP  -- DEBUG
+>     --   report "SIMULATION ERROR -- data addressing error: " &
+>     --   integer'image(exception_type'pos(MM_addr_error)) &
+>     --   " at address: " & SLV32HEX(MM_result)
+>     --   severity error;
+> 
+>   end process MM_MEM_INTERFACE;
+1566d1465
+<   
+1572c1471,1472
+<     if ( (MM_wrmem = '0') and (MM_aVal = '0') ) then
+---
+>     FORWARD_M: if ( (MM_wrmem = '0') and (MM_aVal = '0') )
+>     then
+1586c1486
+<   end process MM_FORWARDING_MEM; -------------------------------
+---
+>   end process MM_FORWARDING_MEM;
+1590c1490
+<   MM_FWD_LWLR: process (MM_aVal,MM_wreg,MM_a_rt,WB_a_c,WB_wreg,WB_C,MM_B)
+---
+>   MM_FWD_LWLR: process (MM_aVal,MM_wreg_cond,MM_a_rt,WB_a_c,WB_wreg,WB_C,MM_B)
+1594,1596c1494,1496
+<     if ( (MM_wreg = '0') and (MM_aVal = '0') and
+<          (MM_a_rt = WB_a_c) and (WB_wreg = '0') and
+<          (WB_a_c /= b"00000") ) then
+---
+>     FORWARD_M: if ( (MM_wreg_cond = '0') and (MM_aVal = '0') and
+>                     (MM_a_rt = WB_a_c) and (WB_wreg = '0') and
+>                     (WB_a_c /= b"00000") ) then
+1608,1612c1508
+<   MM_wreg_cond <= '1' when ( (ram_stall = '1')
+<                              or MM_addrError -- abort regWrite if excptn in MEM
+<                              or (MM_move = '1' and MM_alu_move_ok = '0') )
+<                   else MM_wreg;
+< 
+---
+>   MM_wreg_cond <= '1' when ram_stall = '1' else (MM_wreg or abort);
+1614c1510,1511
+<   -- ----------------------------------------------------------------------
+---
+>   
+>   -- ------------------------------------------------------------------
+1620c1517
+<               MM_addr(1 downto 0),WB_addr2, MM_mem_t(3 downto 2),WB_mem_t,
+---
+>               MM_result(1 downto 0),WB_addr2, MM_mem_t(3 downto 2),WB_mem_t,
+1623c1520
+<   -- WRITE BACK -----------------------------------------------------------
+---
+>   -- WRITE BACK -------------------------------------------
+1625d1521
+<   
+1675c1571
+<     (others => 'X') when others;           -- invalid selection
+---
+>     x"00000000"  when others;           -- invalid selection
+1691c1587
+<               IF_excp_type,RF_excp_type, PC_abort,RF_PC_abort, PC,RF_PC);
+---
+>               IF_excp_type,RF_excp_type, PC,RF_PC);
+1695a1592,1616
+>   RF_nmi     <= nmi;
+>   int_req(7) <= (irq(5) or count_eq_compare);
+>   int_req(6) <= irq(4);
+>   int_req(5) <= irq(3);
+>   int_req(4) <= irq(2);
+>   int_req(3) <= irq(1);
+>   int_req(2) <= irq(0);
+>   int_req(1) <= CAUSE(CAUSE_IP1);
+>   int_req(0) <= CAUSE(CAUSE_IP0);
+> 
+>   interrupt <= int_req(7) or int_req(6) or int_req(5) or int_req(4) or
+>                int_req(3) or int_req(2) or int_req(1) or int_req(0);
+> 
+>   tr_signed <= '0' when ((funct_word.trap = '1' and
+>                           ((funct_word.oper = trGEU)or(funct_word.oper = trLTU)))
+>                          or
+>                          (rimm_word.trap = '1' and
+>                           ((rimm_word.br_t = tGEU)or(rimm_word.br_t = tLTU))))
+>                else '1';
+>   
+>   tr_is_equal <= '1' when (tr_fwd_A = tr_fwd_B) else '0';
+> 
+>   U_COMP_TRAP: subtr32
+>     port map (tr_fwd_A, tr_fwd_B, tr_result, tr_signed, open, tr_less_than);
+>   
+1697,1698c1618
+<   RF_FORWARDING_TRAPS: process (a_rs,a_rt,rimm_word,displ32,
+<                                 EX_wreg,EX_a_c,MM_wreg,MM_a_c,
+---
+>   RF_FORWARDING_TRAPS: process (a_rs,a_rt,EX_wreg,EX_a_c,MM_wreg,MM_a_c,
+1707,1714c1627,1630
+<     elsif ((MM_wreg = '0') and (MM_a_c = a_rs) and (MM_a_c /= b"00000")) then
+<       if (MM_aVal = '0') then    -- LW load-delay slot
+<         if (is_trap = '1') then
+<           tr_stall <= '1';
+<         end if;
+<         tr_fwd_A <= regs_A;
+<       else    -- non-LW
+<         tr_fwd_A <= MM_result;
+---
+>     elsif ((MM_wreg = '0') and (MM_a_c = a_rs) and (MM_a_c /= b"00000")
+>            and (MM_aVal = '0')) then    -- LW load-delay slot
+>       if (is_trap = '1') then
+>         tr_stall <= '1';
+1715a1632,1635
+>       tr_fwd_A <= regs_A;
+>     elsif ((MM_wreg = '0') and (MM_a_c = a_rs) and (MM_a_c /= b"00000")
+>            and (MM_aVal = '1')) then    -- non-LW
+>       tr_fwd_A <= MM_result;
+1726,1733c1646,1649
+<     elsif ((MM_wreg = '0') and (MM_a_c = a_rt) and (MM_a_c /= b"00000")) then
+<       if (MM_aVal = '0') then    -- LW load-delay slot
+<         if (is_trap = '1') then
+<           tr_stall <= '1';
+<         end if;
+<         tr_fwd_B <= regs_B;
+<       else    -- non-LW
+<         tr_fwd_B <= MM_result;
+---
+>     elsif ((MM_wreg = '0') and (MM_a_c = a_rt) and (MM_a_c /= b"00000")
+>            and (MM_aVal = '0')) then    -- LW load-delay slot
+>       if (is_trap = '1') then
+>         tr_stall <= '1';
+1734a1651,1654
+>       tr_fwd_B <= regs_B;
+>     elsif ((MM_wreg = '0') and (MM_a_c = a_rt) and (MM_a_c /= b"00000")
+>            and (MM_aVal = '1')) then    -- non-LW
+>       tr_fwd_B <= MM_result;
+1740,1752d1659
+<   tr_signed <= '0' when ((funct_word.trap = '1' and
+<                           ((funct_word.oper = trGEU)or(funct_word.oper = trLTU)))
+<                          or
+<                          (rimm_word.trap = '1' and
+<                           ((rimm_word.br_t = tGEU)or(rimm_word.br_t = tLTU))))
+<                else '1';
+<   
+<   tr_is_equal <= '1' when (tr_fwd_A = tr_fwd_B) else '0';
+< 
+<   U_COMP_TRAP: subtr32
+<     port map (tr_fwd_A, tr_fwd_B, tr_result, tr_signed, open, tr_less_than);
+< 
+<   trap_dec <= instr_type'pos(trap_instr);  -- debugging only
+1754,1772c1661
+<   RF_EVALUATE_TRAPS: process (trap_instr, tr_is_equal, tr_less_than)
+<     variable i_take_trap : boolean;
+<   begin
+<     case trap_instr is
+<       when TEQ | TEQI =>
+<         i_take_trap := tr_is_equal = '1';
+<       when TNE | TNEI =>
+<         i_take_trap := tr_is_equal = '0';
+<       when TLT | TLTI | TLTU | TLTIU =>
+<         i_take_trap := tr_less_than = '1';
+<       when TGE | TGEI | TGEU | TGEIU =>
+<         i_take_trap := tr_less_than = '0';
+<       when others =>
+<         i_take_trap := FALSE;
+<     end case;
+<     trap_taken <= i_take_trap;
+<   end process RF_EVALUATE_TRAPS;
+< 
+<  -- ----------------------------------------------------------------------    
+---
+>   -- ----------------------------------------------------------------------    
+1774,1776c1663
+<     port map (clk, rst, excp_RF_EX_ld,
+<               cop0_reg,EX_cop0_reg, cop0_sel,EX_cop0_sel,
+<               can_trap,EX_can_trap, 
+---
+>     port map (clk, rst, excp_RF_EX_ld, can_trap,EX_can_trap,
+1778,1780c1665,1669
+<               RF_is_delayslot,EX_is_delayslot,
+<               RF_PC_abort,EX_PC_abort, RF_PC,EX_PC,
+<               trap_taken,EX_trapped);
+---
+>               cop0_reg,EX_cop0_reg, cop0_sel,EX_cop0_sel,
+>               next_instr_in_delay_slot,EX_is_delayslot,
+>               RF_PC,EX_PC, RF_nmi,EX_nmi,
+>               interrupt,EX_interrupt, int_req,EX_int_req,
+>               tr_is_equal,EX_tr_is_equal, tr_less_than,EX_tr_less_than);
+1783,1794c1672
+<   EX_nmi     <= nmi;
+<   int_req(7) <= (irq(5) or count_eq_compare);
+<   int_req(6) <= irq(4);
+<   int_req(5) <= irq(3);
+<   int_req(4) <= irq(2);
+<   int_req(3) <= irq(1);
+<   int_req(2) <= irq(0);
+<   int_req(1) <= CAUSE(CAUSE_IP1);
+<   int_req(0) <= CAUSE(CAUSE_IP0);
+< 
+<   interrupt <= int_req(7) or int_req(6) or int_req(5) or int_req(4) or
+<                int_req(3) or int_req(2) or int_req(1) or int_req(0);
+---
+>   -- EX execute exception ---------------------------------------------
+1797,1800c1675
+<   EX_ovfl <= (EX_can_trap = b"10" and ovfl = '1');
+< 
+<   is_SC   <= (EX_exception = exSC);       -- is StoreConditional?  (alu_fwd)
+<   is_mfc0 <= (EX_exception = exMFC0);     -- is MFC0?  (alu_fwd)
+---
+>   ex_trapped <= '1' when (EX_can_trap = b"10" and ovfl = '1') else '0';
+1802,1814c1677
+<   -- ----------------------------------------------------------------------
+<   PIPESTAGE_EXCP_EX_MM: reg_excp_EX_MM
+<     port map (clk, rst, excp_EX_MM_ld,
+<               EX_cop0_reg, MM_cop0_reg, EX_cop0_sel, MM_cop0_sel,
+<               EX_PC,MM_PC, v_addr,MM_v_addr, nullify,MM_nullify,
+<               addrError,MM_addrError, addrErr_stage_mm,MM_addrErr_stage_mm,
+<               mem_excp_type,MM_mem_excp_type, EX_is_delayslot,MM_is_delayslot,
+<               EX_ovfl,MM_ex_ovfl, EX_trapped,MM_trapped,
+<               EX_PC_abort,MM_PC_abort, SL2BOOL(LL_SC_abort), MM_ll_sc_abort,
+<               EX_exception,MM_exception, tlb_exception,MM_tlb_exception,
+<               tlb_stage_mm,MM_tlb_stage_mm, TLB_excp_type,MM_TLB_excp_type,
+<               EX_nmi,MM_nmi, interrupt,MM_interrupt, int_req,MM_int_req,
+<               is_SC, MM_is_SC, is_MFC0, MM_is_MFC0);
+---
+>   is_exception <= exOvfl when MM_ex_trapped = '1' else EX_exception;
+1816,1828d1678
+< 
+<  
+<   is_exception <=  MM_TLB_excp_type  when MM_tlb_exception else
+<                    MM_mem_excp_type  when MM_addrError     else
+<                    exTrap            when MM_trapped       else
+<                    exOvfl            when MM_ex_ovfl       else
+<                    IFaddressError    when MM_PC_abort      else
+<                    MM_exception;
+< 
+<   exception_num <= exception_type'pos(is_exception); -- for debugging only
+< 
+< 
+<   -- STATUS -- pg 79 -- cop0_12 --------------------
+1830,1835c1680,1684
+<   process (MM_a_rt, is_exception, cop0_inp,
+<            MM_cop0_reg, MM_cop0_sel, MM_nmi, MM_interrupt,MM_int_req,
+<            RF_is_delayslot, EX_is_delayslot, MM_is_delayslot, WB_is_delayslot,
+<            rom_stall,ram_stall, MM_is_mfc0,
+<            INDEX, RANDOM, EntryLo0, EntryLo1, CONTEXT, PAGEMASK, WIRED,
+<            EntryHi, COUNT, COMPARE, STATUS, CAUSE, EPC, BadVAddr)
+---
+>   process (rst, EX_a_rt, EX_PC, is_exception, EX_trap_instr,
+>            EX_cop0_reg, EX_cop0_sel, EX_nmi, EX_interrupt,EX_int_req,
+>            EX_is_delayslot, cop0_inp, EX_tr_is_equal, EX_tr_less_than,
+>            COUNT, COMPARE, STATUS, CAUSE, EPC, BadVAddr,
+>            rom_stall,ram_stall)
+1838,1840c1687,1688
+<     variable i_update,i_epc_update,i_stall : std_logic;
+<     variable i_nullify: boolean;
+<     variable i_update_r : reg5;
+---
+>     variable i_update,i_epc_update,i_stall,i_nullify,i_take_trap : std_logic;
+>     variable i_a_c,i_update_r : reg5;
+1841a1690
+>     variable i_excp_PCsel : reg3;
+1844a1694,1695
+>     exception_num <= exception_type'pos(is_exception); -- for debugging only
+> 
+1847c1698,1699
+<     i_epc_source := EPC_src_PC;
+---
+>     i_epc_source := b"000";
+>     i_excp_PCsel := b"000";     -- PC <= normal processing PC
+1849a1702
+>     i_a_c        := b"00000";
+1852c1705,1706
+<     i_nullify    := FALSE;
+---
+>     i_nullify    := '0';
+>     i_take_trap  := '0';
+1853a1708
+>     nullify_EX      <= '0';
+1855a1711
+>     trap_taken      <= '0';
+1857,1865c1713,1715
+<     is_delayslot    <= '0';
+<     
+<     newSTATUS             := STATUS;    -- preserve as needed
+<     newSTATUS(STATUS_BEV) := '0';  -- interrupts at offset 0x200
+<     newSTATUS(STATUS_CU3) := '0';  -- COP-3 absent (always)
+<     newSTATUS(STATUS_CU2) := '0';  -- COP-2 absent (always)
+<     newSTATUS(STATUS_CU1) := '0';  -- COP-1 absent (always)
+<     newSTATUS(STATUS_CU0) := '1';  -- COP-0 present=1 (always)
+<     
+---
+>     BadVAddr_source <= '0';
+>     BadVAddr_update <= '1';
+> 
+1869,1870c1719,1720
+<         i_update_r := MM_cop0_reg;
+<         case MM_cop0_reg is
+---
+>         i_update_r := EX_cop0_reg;
+>         case EX_cop0_reg is
+1874,1876c1724,1725
+<             i_stall    := '0';
+<           when cop0reg_COUNT    | cop0reg_COMPARE  | cop0reg_CAUSE   |
+<                cop0reg_EntryLo0 | cop0reg_EntryLo1 | cop0reg_EntryHi =>
+---
+>             i_stall    := '1';
+>           when cop0reg_COUNT | cop0reg_COMPARE | cop0reg_CAUSE =>
+1878,1881c1727
+<             i_stall    := '0';
+<           when cop0reg_Index  | cop0reg_Context | cop0reg_Wired =>
+<             i_update   := '1';
+<             i_stall    := '0';
+---
+>             i_stall    := '1';
+1884,1885c1730,1731
+<             i_epc_source := EPC_src_B;
+<             i_stall      := '0';
+---
+>             i_epc_source := b"100";     -- EX_B
+>             i_stall      := '1';
+1896c1742,1743
+<         i_stall    := '0';
+---
+>         i_a_c      := EX_a_rt;
+>         i_stall    := '1';
+1903c1750,1751
+<         i_stall    := '0';
+---
+>         i_a_c      := EX_a_rt;
+>         i_stall    := '1';
+1905,1915c1753,1754
+<       when exMFC0 =>                    -- move from COP-0
+<         i_stall := '0';
+<         case MM_cop0_reg is
+<           when cop0reg_Index    => i_COP0_rd := INDEX;
+<           when cop0reg_Random   => i_COP0_rd := RANDOM;
+<           when cop0reg_EntryLo0 => i_COP0_rd := EntryLo0;
+<           when cop0reg_EntryLo1 => i_COP0_rd := EntryLo1;
+<           when cop0reg_Context  => i_COP0_rd := CONTEXT;
+<           when cop0reg_PageMask => i_COP0_rd := PAGEMASK;
+<           when cop0reg_Wired    => i_COP0_rd := WIRED;
+<           when cop0reg_EntryHi  => i_COP0_rd := EntryHi;
+---
+>       when exMFC0 =>            -- move from COP-0
+>         case EX_cop0_reg is
+1923c1762
+<             if MM_cop0_sel = b"000" then
+---
+>             if EX_cop0_sel = b"000" then
+1929a1769,1770
+>         i_a_c   := EX_a_rt;
+>         i_stall := '1';
+1931,1932c1772
+<       when exERET =>                    -- EXCEPTION RETURN
+<         newSTATUS(STATUS_EXL) := '0';   -- leave exception level
+---
+>       when exERET =>            -- exception return
+1935,1960c1775,1777
+<         i_stall      := '0';            -- do not stall
+<         i_nullify    := TRUE;           -- nullify instructions in IF,RF
+< 
+<         
+<       when exSYSCALL | exBREAK =>       -- SYSCALL, BREAK
+<         i_stall    := '0';
+<         if is_exception = exSYSCALL then
+<           ExcCode <= cop0code_Sys;
+<         else
+<           ExcCode <= cop0code_Bp;
+<         end if;  
+<         newSTATUS(STATUS_EXL) := '1';   -- at exception level
+<         newSTATUS(STATUS_UM)  := '0';   -- enter kernel mode          
+<         newSTATUS(STATUS_IE)  := '0';   -- disable interrupts
+<         i_update   := '1';
+<         i_update_r := cop0reg_STATUS;
+<         i_stall    := '0';              -- do not stall
+<         i_epc_update   := '0';
+<         i_nullify    := TRUE;           -- nullify instructions in IF,RF
+<         if MM_is_delayslot = '1' then   -- instr is in delay slot
+<           i_epc_source  := EPC_src_WB;  -- re-execute branch/jump
+<           is_delayslot  <= WB_is_delayslot;
+<         else
+<           i_epc_source  := EPC_src_MM;
+<           is_delayslot  <= MM_is_delayslot;
+<         end if;
+---
+>         i_stall      := '0';
+>         i_excp_PCsel := b"001";          -- PC <= EPC
+>         i_nullify    := '1';             -- nullify instructions in IF,RF
+1962,1963c1779
+< 
+<       when exTRAP =>
+---
+>       when exTRAP | exSYSCALL | exBREAK =>   -- trap instruction
+1965,1969d1780
+<         newSTATUS(STATUS_EXL) := '1';   -- at exception level
+<         newSTATUS(STATUS_UM)  := '0';   -- enter kernel mode          
+<         newSTATUS(STATUS_IE)  := '0';   -- disable interrupts
+<         i_update   := '1';
+<         i_update_r := cop0reg_STATUS;
+1971,1975c1782,1815
+<         i_epc_update := '0';
+<         i_nullify    := TRUE;           -- nullify instructions in IF,RF,EX
+<         if MM_is_delayslot = '1' then   -- instr is in delay slot
+<           i_epc_source  := EPC_src_WB;  -- WB_PC, re-execute branch/jump
+<           is_delayslot  <= WB_is_delayslot;
+---
+>         case EX_trap_instr is
+>           when TEQ | TEQI =>
+>             i_take_trap := EX_tr_is_equal;
+>           when TNE | TNEI =>
+>             i_take_trap := not(EX_tr_is_equal);
+>           when TLT | TLTI | TLTU | TLTIU =>
+>             i_take_trap := EX_tr_less_than;
+>           when TGE | TGEI | TGEU | TGEIU =>
+>             i_take_trap := not(EX_tr_less_than);
+>           when SYSCALL =>
+>             i_take_trap := '1';
+>             ExcCode     <= cop0code_Sys;
+>           when BREAK =>
+>             i_take_trap := '1';
+>             ExcCode     <= cop0code_Bp;
+>           when others =>
+>             i_take_trap := '0';
+>         end case;
+>         if  i_take_trap = '1' then
+>           trap_taken <= '1';
+>           newSTATUS(STATUS_EXL) := '1';   -- at exception level
+>           newSTATUS(STATUS_UM)  := '0';   -- enter kernel mode          
+>           newSTATUS(STATUS_IE)  := '0';   -- disable interrupts
+>           i_update   := '1';
+>           i_update_r := cop0reg_STATUS;
+>           i_stall    := '0';
+>           i_epc_update := '0';
+>           i_nullify    := '1';          -- nullify instructions in IF,RF
+>           if EX_is_delayslot = '1' then -- instr is in delay slot
+>             i_epc_source := b"010";     -- EX_PC, re-execute branch/jump
+>           else
+>             i_epc_source := b"001";     -- RF_PC
+>           end if;
+>           i_excp_PCsel := b"010";       -- PC <= exception_180
+1977,1978c1817
+<           i_epc_source  := EPC_src_MM;  -- MM_PC
+<           is_delayslot  <= MM_is_delayslot;
+---
+>           trap_taken <= '0';
+1981d1819
+<         
+1986,1987c1824,1825
+<         -- when exSC => null; if treated here, SC might delay an interrupt
+< 
+---
+>       -- when exSC => null; if treated here, SC might delay an interrupt
+>         
+1995c1833
+<       when exOvfl =>                    -- OVERFLOW happened one cycle earlier
+---
+>       when exOvfl =>                    -- OVERFLOW
+1997d1834
+<         newSTATUS(STATUS_IE)  := '0';   -- disable interrupts
+2001a1839
+>         i_excp_PCsel    := b"010";      -- PC <= exception_0180
+2003,2011c1841,1843
+<         i_nullify       := TRUE;        -- nullify instructions in IF,RF,EX
+<         if WB_is_delayslot = '1' then   -- instr is in delay slot
+<           i_epc_source := EPC_src_WB;   -- WB_PC, re-execute branch/jump
+<           is_delayslot <= WB_is_delayslot;
+<         else
+<           i_epc_source := EPC_src_MM;   -- offending instr PC is in MM_PC
+<           is_delayslot <= MM_is_delayslot;
+<         end if;
+<         
+---
+>         i_nullify       := '1';         -- nullify instructions in IF,RF
+>         nullify_EX      <= '1';         -- and instruction in EX
+>         i_epc_source    := b"010";      -- bad address is in EXCP_EX_PC
+2013,2025d1844
+<       when IFaddressError =>
+<         -- fetch from UNALIGNED ADDRESS
+<         newSTATUS(STATUS_EXL) := '1';   -- at exception level
+<         newSTATUS(STATUS_IE)  := '0';   -- disable interrupts
+<         exception_taken <= '1';
+<         i_update        := '1';
+<         i_update_r      := cop0reg_STATUS;
+<         ExcCode <= cop0code_AdEL;
+<         i_nullify    := TRUE;           -- nullify instructions in IF,RF,EX
+<         i_epc_source := EPC_src_MM;     -- bad address is in EXCP_MM_PC
+<         i_epc_update    := '0';
+<         is_delayslot <= MM_is_delayslot;
+< 
+2027,2028c1846,1847
+<       when MMaddressErrorLD | MMaddressErrorST =>
+<         -- load/store from/to UNALIGNED ADDRESS
+---
+>       when IFaddressError | MMaddressErrorLD | MMaddressErrorST =>
+>         -- fetch/load/store from UNALIGNED ADDRESS
+2030d1848
+<         newSTATUS(STATUS_IE)  := '0';   -- disable interrupts
+2035c1853,1854
+<         i_nullify       := TRUE;        -- nullify instructions in IF,RF,EX
+---
+>         i_excp_PCsel    := b"010";      -- PC <= exception_0180
+>         BadVAddr_update <= '0';
+2041,2043c1860,1863
+<         if WB_is_delayslot = '1' then   -- instr is in delay slot
+<           i_epc_source := EPC_src_WB;   -- WB_PC, re-execute branch/jump
+<           is_delayslot <= WB_is_delayslot;
+---
+>         if is_exception = IFaddressError then
+>           i_nullify       := '1';       -- nullify instructions in IF,RF
+>           i_epc_source    := b"010";    -- bad address is in EXCP_EX_PC
+>           badVAddr_source <= '0';       -- instruction fetch
+2045,2046c1865,1866
+<           i_epc_source := EPC_src_MM;   -- offending instr PC is in MM_PC
+<           is_delayslot <= MM_is_delayslot;
+---
+>           i_epc_source    := b"011";    -- bad address is in EXCP_MM_PC
+>           badVAddr_source <= '1';       -- load/store
+2048,2055d1867
+< 
+< 
+<       when exEHB =>                     -- stall processor to clear hazards
+<         i_stall := '1';
+< 
+< 
+<       when exTLBP | exTLBR | exTLBWI | exTLBWR =>  -- TLB access
+<         i_stall := '0';                 -- stall the processor
+2056a1869,1870
+>           
+>       when others =>                    -- interrupt pending?
+2058,2162c1872,1891
+<       when exTLBrefillIF =>
+<         ExcCode <= cop0code_TLBL;
+<         if RF_is_delayslot = '1' then       -- instr is in delay slot
+<           i_epc_source := EPC_src_EX;       -- EX_PC, re-execute branch/jump
+<           is_delayslot <= RF_is_delayslot;
+<         else
+<           i_epc_source := EPC_src_RF;       -- RF_PC
+<           is_delayslot <= '0';
+<         end if;
+<         newSTATUS(STATUS_EXL) := '1';       -- at exception level
+<         newSTATUS(STATUS_IE)  := '0';       -- disable interrupts
+<         i_update        := '1';
+<         i_update_r      := cop0reg_STATUS;
+<         i_epc_update    := '0';
+<         i_nullify       := TRUE;            -- nullify instructions in IF,RF,EX
+<         
+< 
+<       when exTLBrefillRD | exTLBrefillWR =>
+<         case is_exception is
+<           when exTLBrefillRD =>
+<             ExcCode <= cop0code_TLBL;
+<           when exTLBrefillWR =>
+<             ExcCode <= cop0code_TLBS;
+<           when others => null;
+<         end case;
+<         if WB_is_delayslot = '1' then   -- instr is in delay slot
+<           i_epc_source := EPC_src_WB;   -- MM_PC, re-execute branch/jump
+<           is_delayslot <= WB_is_delayslot;
+<         else
+<           i_epc_source := EPC_src_MM;   -- EX_PC
+<           is_delayslot <= MM_is_delayslot;
+<         end if;
+<         newSTATUS(STATUS_EXL) := '1';   -- at exception level
+<         newSTATUS(STATUS_IE)  := '0';   -- disable interrupts
+<         i_update     := '1';
+<         i_update_r   := cop0reg_STATUS;
+<         i_epc_update   := '0';
+<         i_nullify      := TRUE;         -- nullify instructions in IF,RF,EX
+<         
+<       when exTLBdblFaultIF | exTLBinvalIF  =>
+<         ExcCode <= cop0code_TLBL;
+<         if RF_is_delayslot = '1' then   -- instr is in delay slot
+<           i_epc_source := EPC_src_RF;   -- RF_PC, re-execute branch/jump
+<           is_delayslot <= RF_is_delayslot;              
+<         else
+<           i_epc_source := EPC_src_PC;   -- PC
+<           is_delayslot <= '0';
+<         end if;
+<         newSTATUS(STATUS_EXL) := '1';       -- at exception level
+<         newSTATUS(STATUS_IE)  := '0';       -- disable interrupts
+<         i_update     := '1';
+<         i_update_r   := cop0reg_STATUS;
+<         i_epc_update   := '0';
+<         i_nullify      := TRUE;         -- nullify instructions in IF,RF,EX        
+< 
+< 
+<       when exTLBdblFaultRD | exTLBdblFaultWR |
+<            exTLBinvalRD    | exTLBinvalWR    | exTLBmod =>
+<         case is_exception is
+<           when exTLBinvalRD | exTLBdblFaultRD =>
+<             ExcCode <= cop0code_TLBL;
+<           when exTLBinvalWR | exTLBdblFaultWR =>
+<             ExcCode <= cop0code_TLBS;
+<           when exTLBmod =>
+<             ExcCode <= cop0code_Mod;
+<           when others => null;
+<         end case;
+<         if WB_is_delayslot = '1' then   -- instr is in delay slot
+<           i_epc_source := EPC_src_WB;   -- MM_PC, re-execute branch/jump
+<           is_delayslot <= WB_is_delayslot;              
+<         else
+<           i_epc_source := EPC_src_MM;   -- EX_PC
+<           is_delayslot <= MM_is_delayslot;
+<         end if;
+<         newSTATUS(STATUS_EXL) := '1';       -- at exception level
+<         newSTATUS(STATUS_IE)  := '0';       -- disable interrupts
+<         i_update     := '1';
+<         i_update_r   := cop0reg_STATUS;
+<         i_epc_update   := '0';
+<         i_nullify      := TRUE;         -- nullify instructions in IF,RF,EX        
+< 
+<         
+<       when others =>                    -- interrupt pending?
+< 
+<         if ( (MM_nmi = '1') and (STATUS(STATUS_ERL) = '0') ) then
+<           -- non maskable interrupt
+<           -- assert false report "NMinterrupt PC="&SLV32HEX(PC) severity note;
+<           exception_taken <= '1';
+<           newSTATUS(STATUS_BEV) := '1'; -- locationVector at bootstrap
+<           newSTATUS(STATUS_TS)  := '0'; -- not TLBmatchesSeveral
+<           newSTATUS(STATUS_SR)  := '0'; -- not softReset
+<           newSTATUS(STATUS_NMI) := '1'; -- non maskable interrupt
+<           newSTATUS(STATUS_ERL) := '1'; -- at error level
+<           i_update   := '1';
+<           i_update_r := cop0reg_STATUS;
+<           i_stall    := '0';
+<           i_epc_update := '0';
+<           i_nullify    := TRUE;         -- nullify instructions in IF,RF,EX
+<           if MM_is_delayslot = '1' then -- instr is in delay slot
+<             i_epc_source := EPC_src_MM; -- re-execute branch/jump
+<             is_delayslot <= MM_is_delayslot;
+<           else
+<             i_epc_source := EPC_src_EX;
+<             is_delayslot <= EX_is_delayslot;
+<           end if;
+---
+>         if ( (EX_nmi = '1') and (STATUS(STATUS_ERL) = '0') ) then
+>           -- non maskable interrupt
+>           -- assert false report "NM interrupt PC="&SLV32HEX(PC) severity note;
+>           exception_taken <= '1';
+>           newSTATUS(STATUS_BEV) := '1'; -- locationVector at bootstrap
+>           newSTATUS(STATUS_TS)  := '0'; -- not TLBmatchesSeveral
+>           newSTATUS(STATUS_SR)  := '0'; -- not softReset
+>           newSTATUS(STATUS_NMI) := '1'; -- non maskable interrupt
+>           newSTATUS(STATUS_ERL) := '1'; -- at error level
+>           i_update   := '1';
+>           i_update_r := cop0reg_STATUS;
+>           i_stall    := '0';
+>           i_epc_update := '0';
+>           i_nullify    := '1';          -- nullify instructions in IF,RF
+>           if EX_is_delayslot = '1' then -- instr is in delay slot
+>             i_epc_source := b"010";     -- EX_PC, re-execute branch/jump
+>           else
+>             i_epc_source := b"001";     -- RF_PC
+>           end if;
+>           i_excp_PCsel := b"100";       -- PC <= exception_0000
+2165c1894
+<                 (STATUS(STATUS_IE) = '1')  and (MM_interrupt = '1')  and
+---
+>                 (STATUS(STATUS_IE) = '1')  and (EX_interrupt = '1')  and
+2169c1898
+<           interrupt_taken <= '1';       -- debugging only     
+---
+>           interrupt_taken <= '1';
+2178,2181c1907,1909
+<           i_nullify    := TRUE;         -- nullify instructions in IF,RF,EX
+<           if MM_is_delayslot = '1' then -- instr is in delay slot
+<             i_epc_source := EPC_src_MM; -- re-execute branch/jump
+<             is_delayslot <= MM_is_delayslot;
+---
+>           i_nullify    := '1';          -- nullify instructions in IF,RF
+>           if EX_is_delayslot = '1' then -- instr is in delay slot
+>             i_epc_source := b"010";     -- EX_PC, re-execute branch/jump
+2183,2184c1911,1916
+<             i_epc_source := EPC_src_EX;
+<             is_delayslot <= EX_is_delayslot;
+---
+>             i_epc_source := b"001";     -- RF_PC
+>           end if;
+>           if CAUSE(CAUSE_IV) = '1' then
+>             i_excp_PCsel := b"011";     -- PC <= exception_0200
+>           else
+>             i_excp_PCsel := b"010";     -- PC <= exception_0180
+2191,2253c1923,1926
+<     STATUSinp       <= newSTATUS;
+<     MM_cop0_val     <= i_COP0_rd;
+<     update          <= i_update;
+<     update_reg      <= i_update_r;
+< 
+<     if is_exception = exMTC0 and MM_cop0_reg = cop0reg_EPC then
+<       epc_update   <= i_epc_update;
+<     else
+<       epc_update   <= i_epc_update OR STATUS(STATUS_EXL);
+<     end if;
+<     epc_source      <= i_epc_source;
+<     
+<     exception_stall <= i_stall;
+<     nullify         <= i_nullify;
+<     
+<   end process COP0_DECODE_EXCEPTION_AND_UPDATE_STATUS;
+< 
+< 
+<   -- Select input to PC on an exception --------------------
+<   COP0_SEL_EPC: process (is_exception, MM_nmi, MM_interrupt, STATUS, CAUSE,
+<                          MM_trapped, rom_stall, ram_stall)
+<     variable i_excp_PCsel : reg3;
+<   begin
+< 
+<     case is_exception is
+< 
+<       when exERET =>            -- exception return
+<         i_excp_PCsel := PCsel_EXC_EPC;    -- PC <= EPC
+<         
+<       when exSYSCALL | exBREAK | exRESV_INSTR | exOvfl
+<            | IFaddressError | MMaddressErrorLD | MMaddressErrorST 
+<            | exTLBdblFaultIF | exTLBdblFaultRD | exTLBdblFaultWR 
+<            | exTLBinvalIF | exTLBinvalRD | exTLBinvalWR | exTLBmod =>
+<         i_excp_PCsel := PCsel_EXC_0180;   -- PC <= exception_180
+< 
+<        when exTRAP =>
+<          if MM_trapped then
+<            i_excp_PCsel := PCsel_EXC_0180; -- PC <= exception_180
+<          else
+<            i_excp_PCsel := PCsel_EXC_none;
+<          end if;
+<         
+<       when exTLBrefillIF | exTLBrefillRD | exTLBrefillWR =>
+<         i_excp_PCsel := PCsel_EXC_0000; -- PC <= exception_0000
+< 
+<       when others =>                    -- interrupt pending?
+< 
+<         if ( (MM_nmi = '1') and (STATUS(STATUS_ERL) = '0') ) then
+<           -- non maskable interrupt
+<           i_excp_PCsel := PCsel_EXC_BFC0; -- PC <= 0xBFC0.0000
+<         
+<         elsif ( (STATUS(STATUS_EXL) = '0') and (STATUS(STATUS_ERL) = '0') and
+<                 (STATUS(STATUS_IE) = '1')  and (MM_interrupt = '1')  and
+<                 (rom_stall = '0' and ram_stall = '0')) then
+<           -- normal interrupt
+<           if CAUSE(CAUSE_IV) = '1' then
+<             i_excp_PCsel := PCsel_EXC_0200; -- PC <= exception_0200
+<           else
+<             i_excp_PCsel := PCsel_EXC_0180; -- PC <= exception_0180
+<           end if;
+<         else
+<           i_excp_PCsel := PCsel_EXC_none;   -- should never get here
+<         end if; -- NMI or interrupt 
+---
+>     newSTATUS(STATUS_CU3) := '0';  -- COP-3 absent (always)
+>     newSTATUS(STATUS_CU2) := '0';  -- COP-2 absent (always)
+>     newSTATUS(STATUS_CU1) := '0';  -- COP-1 absent (always)
+>     newSTATUS(STATUS_CU0) := '1';  -- COP-0 present=1 (always)
+2255d1927
+<     end case;
+2256a1929,1935
+>     STATUSinp    <= newSTATUS;
+>     EX_cop0_val  <= i_COP0_rd;
+>     EX_cop0_a_c  <= i_a_c;              -- only for forwarding COP0 values
+>     update       <= i_update;
+>     update_reg   <= i_update_r;
+>     epc_update   <= i_epc_update;
+>     epc_source   <= i_epc_source;
+2257a1937,1938
+>     exception_stall <= i_stall;
+>     nullify      <= i_nullify;
+2259c1940
+<   end process COP0_SEL_EPC;
+---
+>   end process COP0_DECODE_EXCEPTION_AND_UPDATE_STATUS;
+2262,2263c1943,1945
+<   
+<   COP0_FORWARDING: process (WB_a_c,WB_wreg,MM_a_rt,WB_C,MM_B)
+---
+>   COP0_FORWARDING:
+>   process (EX_a_rt,EX_a_c, MM_a_c,MM_wreg,MM_result, WB_a_c,WB_wreg, 
+>            WB_C,EX_B, MM_cop0_val, MM_cop0_a_c,EX_cop0_a_c)
+2266c1948,1951
+<     if ((WB_wreg = '0')and(WB_a_c /= b"00000")and(WB_a_c = MM_a_rt)) then
+---
+>     if ((MM_wreg = '0')and(MM_a_c /= b"00000")and(MM_a_c = EX_a_rt)) then
+>       i_B := MM_result;
+>       -- assert false report "FWD_cop0 MM: inp="&SLV32HEX(cop0_inp); -- DEBUG
+>     elsif ((WB_wreg = '0')and(WB_a_c /= b"00000")and(WB_a_c = EX_a_rt)) then
+2267a1953,1957
+>       -- assert false report "FWD_cop0 WB: inp="&SLV32HEX(cop0_inp); -- DEBUG
+>     elsif ((MM_wreg = '0')and
+>            (MM_cop0_a_c /= b"00000")and(MM_cop0_a_c = EX_cop0_a_c)) then
+>       i_B := MM_cop0_val;
+>       -- assert false report "FWD_cop0 CP: inp="&SLV32HEX(cop0_inp); -- DEBUG
+2269c1959,1960
+<       i_B := MM_B;
+---
+>       i_B := EX_B;
+>       -- assert false report "FWD_cop0 EX: inp="&SLV32HEX(cop0_inp); -- DEBUG
+2275d1965
+<   -- STATUS -- pg 79 -- cop0_12 --------------------
+2279c1969
+< 
+---
+>   
+2283d1972
+<    
+2285,2288c1974,1977
+<   -- CAUSE -- pg 92-- cop0_13 --------------------------
+<   COP0_COMPUTE_CAUSE: process(rst,clk, update,update_reg,
+<                               MM_int_req, ExcCode, cop0_inp, is_delayslot,
+<                               count_eq_compare,count_enable, STATUS, CAUSE)
+---
+>   -- CAUSE ------------------------------
+>   COP0_COMPUTE_CAUSE:
+>   process(rst, update,update_reg, EX_int_req, ExcCode, cop0_inp,
+>           EX_is_delayslot, count_eq_compare,count_enable, CAUSE)
+2291,2327c1980,2011
+< 
+<     if STATUS(STATUS_EXL) = '0' then
+<       newCAUSE(CAUSE_BD)   := is_delayslot;     -- instr is in delay slot
+<     else
+<       newCAUSE(CAUSE_BD)   := CAUSE(CAUSE_BD);  -- hold it on a double fault
+<     end if;
+<     newCAUSE(CAUSE_TI)     := count_eq_compare;
+<     newCAUSE(CAUSE_CE1)    := '0';
+<     newCAUSE(CAUSE_CE0)    := '0';
+<     newCAUSE(CAUSE_DC)     := CAUSE(CAUSE_DC);
+<     newCAUSE(CAUSE_PCI)    := '0';
+<     newCAUSE(25 downto 24) := b"00";
+<     newCAUSE(CAUSE_IV)     := CAUSE(CAUSE_IV);
+<     newCAUSE(CAUSE_WP)     := '0';
+<     newCAUSE(21 downto 16) := b"000000";      
+<     newCAUSE(CAUSE_IP7)    := MM_int_req(7);
+<     newCAUSE(CAUSE_IP6)    := MM_int_req(6);
+<     newCAUSE(CAUSE_IP5)    := MM_int_req(5);
+<     newCAUSE(CAUSE_IP4)    := MM_int_req(4);
+<     newCAUSE(CAUSE_IP3)    := MM_int_req(3);
+<     newCAUSE(CAUSE_IP2)    := MM_int_req(2);
+<     newCAUSE(CAUSE_IP1)    := CAUSE(CAUSE_IP1);
+<     newCAUSE(CAUSE_IP0)    := CAUSE(CAUSE_IP0);
+<     newCAUSE(7)            := '0';
+<     newCAUSE(6 downto 2)   := ExcCode;
+<     newCAUSE(1 downto 0)   := b"00";
+< 
+<     if (update = '1' and update_reg = cop0reg_CAUSE) then
+<       CAUSEinp <= newCAUSE(CAUSE_BD downto CAUSE_CE0) &
+<                   cop0_inp(CAUSE_DC) & cop0_inp(CAUSE_PCI) & b"00" &
+<                   cop0_inp(CAUSE_IV) & 
+<                   newCAUSE(CAUSE_WP  downto CAUSE_IP2) &
+<                   cop0_inp(CAUSE_IP1 downto CAUSE_IP0) & '0' &
+<                   newCAUSE(6 downto 2) & b"00";
+<     else
+<       CAUSEinp <= newCAUSE;
+<     end if;
+---
+>       newCAUSE(CAUSE_BD)     := EX_is_delayslot; -- instr is in delay slot
+>       newCAUSE(CAUSE_TI)     := count_eq_compare;
+>       newCAUSE(CAUSE_CE1)    := '0';
+>       newCAUSE(CAUSE_CE0)    := '0';
+>       newCAUSE(CAUSE_DC)     := count_enable;
+>       newCAUSE(CAUSE_PCI)    := '0';
+>       newCAUSE(25 downto 24) := b"00";
+>       newCAUSE(CAUSE_IV)     := CAUSE(CAUSE_IV);
+>       newCAUSE(CAUSE_WP)     := '0';
+>       newCAUSE(21 downto 16) := b"000000";      
+>       newCAUSE(CAUSE_IP7)    := EX_int_req(7);
+>       newCAUSE(CAUSE_IP6)    := EX_int_req(6);
+>       newCAUSE(CAUSE_IP5)    := EX_int_req(5);
+>       newCAUSE(CAUSE_IP4)    := EX_int_req(4);
+>       newCAUSE(CAUSE_IP3)    := EX_int_req(3);
+>       newCAUSE(CAUSE_IP2)    := EX_int_req(2);
+>       newCAUSE(CAUSE_IP1)    := CAUSE(CAUSE_IP1);
+>       newCAUSE(CAUSE_IP0)    := CAUSE(CAUSE_IP0);
+>       newCAUSE(7)            := '0';
+>       newCAUSE(6 downto 2)   := ExcCode;
+>       newCAUSE(1 downto 0)   := b"00";
+> 
+>       if (update = '1' and update_reg = cop0reg_CAUSE) then
+>         CAUSEinp <= newCAUSE(CAUSE_BD downto CAUSE_CE0) &
+>                     cop0_inp(CAUSE_DC) & cop0_inp(CAUSE_PCI) & b"00" &
+>                     cop0_inp(CAUSE_IV) & 
+>                     newCAUSE(CAUSE_WP  downto CAUSE_IP2) &
+>                     cop0_inp(CAUSE_IP1 downto CAUSE_IP0) & '0' &
+>                     newCAUSE(6 downto 2) & b"00";
+>       else
+>         CAUSEinp <= newCAUSE;
+>       end if;
+2330,2331c2014,2015
+<   COP0_CAUSE_HOLD: process(rst,clk, ExcCode,is_exception,MM_cop0_reg,not_stalled)
+<     variable state: reg32;
+---
+>   COP0_CAUSE_HOLD: process(rst,clk,
+>                            ExcCode,is_exception,EX_cop0_reg,not_stalled)
+2338,2339c2022,2023
+<             MM_cop0_reg = cop0reg_CAUSE and (not_stalled = '1') ) then
+<         cause_update <= '0';            -- CAUSE is being read
+---
+>             EX_cop0_reg = cop0reg_CAUSE and (not_stalled = '1') ) then
+>       cause_update <= '0';              -- CAUSE is being read
+2343c2027
+<   COP0_CAUSE: register32 generic map (RESET_CAUSE)
+---
+>   COP0_CAUSE: register32 generic map (x"00000000")
+2347c2031
+<   -- EPC -- pg 97 -- cop0_14 -------------------
+---
+>   -- EPC ------------------------------
+2349,2355c2033,2038
+<     PC              when EPC_src_PC,    -- instr fetch exception
+<     RF_PC           when EPC_src_RF,    -- invalid instr exception
+<     EX_PC           when EPC_src_EX,    -- interrupt, eret, overflow
+<     MM_PC           when EPC_src_MM,    -- data memory exception
+<     WB_PC           when EPC_src_WB,    -- overflow in a branch delay slot
+<     MM_B            when EPC_src_B,     -- mtc0
+<     (others => 'X') when others;        -- invalid selection
+---
+>     PC     when b"000",                 -- instr fetch exception
+>     RF_PC  when b"001",                 -- invalid instr exception
+>     EX_PC  when b"010",                 -- interrupt, eret, overflow
+>     WB_PC  when b"011",                 -- data memory exception
+>     alu_fwd_B   when b"100",            -- 100 mtc0
+>     x"00000000" when others;            -- invalid selection
+2361c2044
+<   -- COUNT & COMPARE -- pg 75, 78 -----------------
+---
+>   -- COUNT & COMPARE ------------------------------ not_stalled = '1'
+2372,2418c2055,2056
+<     port map (clk, rst, count_update, count_enable, cop0_inp, COUNT);
+<     -- port map (clk, rst, count_update, PCload, cop0_inp, COUNT); -- DEBUG
+< 
+<   compare_set <= (count_eq_compare or BOOL2SL(COUNT = COMPARE))
+<                  when compare_update = '1'
+<                  else '0';
+<             
+<   COP0_COUNT_INTERRUPT: FFD
+<     port map (clk, rst, '1', compare_set, count_eq_compare);
+<   
+<   disable_count <= CAUSE(CAUSE_DC)
+<                    when (cause_update='0' and CAUSE(CAUSE_DC) /= count_enable)
+<                    else count_enable;     -- load new CAUSE(CAUSE_DC)
+<   COP0_DISABLE_COUNT: FFD port map (clk,'1',rst,disable_count, count_enable);
+< 
+<   
+<   -- BadVAddr -- pg 74 ---------------------------
+< 
+<   U_BadVAddr_UPDATE: process(is_exception, RF_is_delayslot, RF_PC, EX_PC,
+<                              MM_v_addr)
+<     variable i_update : std_logic;
+<   begin
+<     case is_exception is    
+<       when IFaddressError | exTLBrefillIF | exTLBdblFaultIF | exTLBinvalIF =>
+<         if RF_is_delayslot = '1' then       -- instr is in delay slot
+<           BadVAddr_inp <= EX_PC;
+<         else
+<           BadVAddr_inp <= RF_PC;
+<         end if;
+<         i_update       := '0';
+< 
+<       when MMaddressErrorLD | MMaddressErrorST | exTLBrefillRD | exTLBrefillWR
+<            | exTLBdblFaultRD | exTLBdblFaultWR | exTLBinvalRD | exTLBinvalWR
+<            | exTLBmod =>
+<         BadVAddr_inp <= MM_v_addr;
+<         i_update     := '0';
+<         
+<       when others =>
+<         BadVAddr_inp <= (others => 'X');
+<         i_update       := '1';
+<     end case;
+<     BadVAddr_update <= i_update;
+<   end process U_BadVAddr_UPDATE;
+< 
+<   COP0_BadVAddr: register32 generic map(x"00000000")
+<     port map (clk, rst, BadVAddr_update, BadVAddr_inp, BadVAddr);
+< 
+---
+>     -- port map (clk, rst, count_update, count_enable, cop0_inp, COUNT);
+>     port map (clk, rst, count_update, PCload, cop0_inp, COUNT); -- DEBUG
+2420,2421c2058,2059
+<   -- LLaddr & LLbit --------------------------------------------------
+<   -- check address of SC at stage EX, in time to kill memory reference
+---
+>   compare_set <= BOOL2SL(COUNT = COMPARE);
+>   compare_clr <= BOOL2SL(compare_update = '0');
+2423,2433c2061,2062
+<   LL_update <= '0' when (update = '1' and update_reg = cop0reg_LLAddr)
+<                else '1';
+< 
+<   COP0_LLaddr: register32 generic map(x"00000000")      -- update at MM
+<     port map (clk, rst, LL_update, MM_v_addr, LLaddr);
+< 
+<   LL_SC_differ <= '0' when (v_addr = LLaddr) else '1';  -- check at EX
+< 
+<   LL_SC_abort  <= (LL_SC_differ or not(ll_sc_bit))
+<                   when (EX_exception = exSC) --  and pipe_stall = '0')
+<                   else '0';
+---
+>   COP0_COUNT_INTERRUPT: sr_latch_rst
+>     port map (rst, compare_set, compare_clr, count_eq_compare);
+2435,2449c2064,2065
+<   COP0_LLbit: process(rst,clk)
+<   begin
+<     if rst = '0' then
+<       ll_sc_bit <= '0';
+<     elsif rising_edge(clk) then
+<       case is_exception is
+<         when exERET =>
+<           ll_sc_bit <= '0';            -- break SC -> LL
+<         when exLL =>
+<           ll_sc_bit <= not LL_update;  -- update only if instr is an LL
+<         when others =>
+<           null;
+<       end case;
+<     end if;
+<   end process COP0_LLbit;
+---
+>   disable_count <= not CAUSE(CAUSE_DC);
+>   COP0_DISABLE_COUNT: sr_latch port map (disable_count, rst, count_enable);
+2451d2066
+<   MM_llbit <= ll_sc_bit and not(BOOL2SL(MM_ll_sc_abort));
+2453,2465c2068
+<   
+<   -- MMU-TLB ===============================================================
+< 
+<   -- assert false -- true                          -- DEBUG
+<   --   report "pgSz " & integer'image(PAGE_SZ_BITS) &
+<   --          " va-1 "& integer'image(VABITS-1) &
+<   --          " pg+1 "& integer'image(PAGE_SZ_BITS+1) &
+<   --          " add " & integer'image(VABITS-1 - PAGE_SZ_BITS+1) &
+<   --          " lef "&integer'image( PC(VABITS-1 downto PAGE_SZ_BITS+1)'left)&
+<   --          " rig "&integer'image(PC(VABITS-1 downto PAGE_SZ_BITS+1)'right);
+< 
+<   
+<   -- MMU Index -- cop0_0 -------------------------
+---
+>   -- BadVAddr ------------------------------------
+2467,2571c2070,2071
+<   index_update <= '0' when (update = '1' and update_reg = cop0reg_Index)
+<                   else not(tlb_probe);
+< 
+<   hit_mm_bit <= '0' when (hit_mm = TRUE) else '1';
+< 
+<   with hit_mm_adr select tlb_adr_mm <= "000" when 0,
+<                                        "001" when 1,
+<                                        "010" when 2,
+<                                        "011" when 3,
+<                                        "100" when 4,
+<                                        "101" when 5,
+<                                        "110" when 6,
+<                                        "111" when 7,
+<                                        "XXX" when others;
+<   
+<   index_inp  <= hit_mm_bit & MMU_IDX_0s & tlb_adr_mm when tlb_probe = '1' else 
+<                 hit_mm_bit & MMU_IDX_0s & cop0_inp(MMU_CAPACITY_BITS-1 downto 0);
+< 
+<   MMU_Index: register32 generic map(x"00000000")
+<     port map (clk, rst, index_update, index_inp, INDEX);
+< 
+< 
+<   -- MMU Wired -- pg 72 -- cop0_6 ----------------
+< 
+<   wired_update <= '0' when (update = '1' and update_reg = cop0reg_Wired)
+<                   else '1';
+<   
+<   wired_inp <= '0' & MMU_IDX_0s & cop0_inp(MMU_CAPACITY_BITS-1 downto 0);
+< 
+<   MMU_Wired: register32 generic map(MMU_WIRED_INIT)
+<     port map (clk, rst, wired_update, wired_inp, WIRED);
+< 
+<   
+<   -- MMU Random -- cop0_1 ------------------------
+< 
+<   MMU_Random: process(clk, rst, WIRED, wired_update)
+<     variable count : integer range -1 to MMU_CAPACITY-1 := MMU_CAPACITY-1;
+<   begin
+<     if rst = '0' then
+<       count := MMU_CAPACITY - 1;
+<     elsif rising_edge(clk) then
+<       count := count - 1;
+<       if count = to_integer(unsigned(WIRED))-1 or wired_update = '0' then
+<         count := MMU_CAPACITY - 1;
+<       end if;
+<       end if;
+<     RANDOM <= std_logic_vector(to_signed(count, 32));
+<   end process MMU_Random;
+< 
+<   
+<   -- MMU EntryLo0 -- pg 63 -- cop0_2 ------------
+< 
+<   entryLo0_update <= '0' when (update = '1' and update_reg = cop0reg_EntryLo0)
+<                      else not(tlb_read);
+<   
+<   entryLo0_inp <= cop0_inp when tlb_read = '0' else tlb_entryLo0;
+<   
+<   MMU_EntryLo0: register32 generic map(x"00000000")
+<     port map (clk, rst, entryLo0_update, entryLo0_inp, EntryLo0);
+< 
+< 
+<   -- MMU EntryLo1 -- pg 63 -- cop0_3 ------------  
+<   
+<   entryLo1_update <= '0' when (update = '1' and update_reg = cop0reg_EntryLo1)
+<                   else not(tlb_read);
+<   
+<   entryLo1_inp <= cop0_inp when tlb_read = '0' else tlb_entryLo1;
+<   
+<   MMU_EntryLo1: register32 generic map(x"00000000")
+<     port map (clk, rst, entryLo1_update, entryLo1_inp, EntryLo1);
+< 
+< 
+<   -- MMU Context -- pg 67 -- cop0_4 ------------
+< 
+<   context_upd_pte <= '0' when (update = '1' and update_reg = cop0reg_Context)
+<                      else '1';
+< 
+<   --
+<   -- these registers are non-compliant so the Page Table can be set
+<   --   at low addresses
+<   --
+<   
+<   -- MMU_ContextPTE: registerN generic map(9, ContextPTE_init)
+<   --   port map (clk, rst, context_upd_pte,
+<   --             cop0_inp(31 downto 23), Context(31 downto 23));
+<   MMU_ContextPTE: registerN generic map(16, b"0000000000000000")
+<     port map (clk, rst, context_upd_pte,
+<               cop0_inp(31 downto 16), Context(31 downto 16));
+< 
+<   context_upd_bad <= '0' when MM_tlb_exception else '1';
+<   
+<   -- MMU_ContextBAD: registerN generic map(19, b"0000000000000000000")
+<   --   port map (clk, rst, context_upd_bad, tlb_context_inp, Context(22 downto 4));
+<   MMU_ContextBAD: registerN generic map(12, b"000000000000")
+<     port map (clk, rst, context_upd_bad,
+<               tlb_excp_VA(VA_HI_BIT-7 downto VA_LO_BIT), Context(15 downto 4));
+< 
+<   Context(3 downto 0) <= b"0000";
+< 
+<   
+<   -- MMU Pagemask -- pg 68 -- cop0_5 ----------- 
+<   -- page size is fixed = 4k, thus PageMask is not register
+<   
+<   -- pageMask_update <= '0' when (update='1' and update_reg=cop0reg_PageMask)
+<   --                else '1';
+---
+>   BadVAddr_inp <= EX_PC when badVAddr_source = '0'  -- instruction fetch
+>                   else WB_result;                   -- load/store
+2573,2595c2073,2074
+<   -- pageMask_inp <= cop0_inp when tlb_read = '0' else tlb_pageMask_mm;
+<   
+<   -- MMU_PageMask: register32 generic map(x"00000000")
+<   --  port map (clk, rst, pageMask_update, pageMask_inp, PageMask);
+< 
+<   PageMask <= mmu_PageMask;
+< 
+<   
+<   -- MMU EntryHi -- pg 76 -- cop0_10 -----------  
+<   -- EntryHi holds the ASID of the current process, to check for a match
+< 
+<   entryHi_update <= '0' when ( (update = '1' and update_reg = cop0reg_EntryHi)
+<                                or ( MM_tlb_exception ) )
+<                     else not(tlb_read);
+<   
+<   entryHi_inp <= tlb_excp_VA & EHI_ZEROS & EntryHi(EHI_G_BIT) & EntryHi(EHI_ASIDHI_BIT downto EHI_ASIDLO_BIT) when MM_tlb_exception  else
+<                  cop0_inp  when tlb_read = '0' else
+<                  tlb_entryhi;
+<   
+<   MMU_EntryHi: register32 generic map(x"00000000")
+<     port map (clk, rst, entryHi_update, entryHi_inp, EntryHi);
+< 
+< 
+---
+>   COP0_BadVAddr: register32 generic map(x"00000000")
+>     port map (clk, rst, BadVAddr_update, BadVAddr_inp, BadVAddr);
+2597d2075
+<   -- == MMU ===============================================================
+2599,2608c2077,2079
+<   -- -- pg 41 ----------------------------------
+<   MMU_exceptions: process(iaVal, EX_wrmem, EX_aVal, hit_mm, hit_pc,
+<                           hit_mm_v, hit_mm_d, hit_pc_v, STATUS, tlb_ex_2)
+<     variable i_stage_mm, i_exception, i_miss_mm, i_miss_pc : boolean;
+<     variable i_excp_type : exception_type;
+<   begin
+< 
+<     i_miss_pc := not(hit_pc) and (iAval = '0');
+< 
+<     i_miss_mm := not(hit_mm) and (EX_aval = '0');
+---
+>   -- LLaddr & LLbit ------------------------------
+>   LL_update <= '0' when (update = '1' and update_reg = cop0reg_LLAddr)
+>                else '1';
+2610,2612c2081,2082
+<     -- check first for events later in the pipeline: LOADS and STORES
+< 
+<     if i_miss_mm then
+---
+>   COP0_LLaddr: register32 generic map(x"00000000")
+>     port map (clk, rst, LL_update, result, LLaddr);
+2614,2625c2084,2103
+<       if EX_wrmem = '0' then
+<         if STATUS(STATUS_EXL) = '1' then
+<           i_excp_type := exTLBdblFaultWR;
+<         else
+<           i_excp_type := exTLBrefillWR;
+<         end if;
+<       else
+<         if STATUS(STATUS_EXL) = '1' then
+<           i_excp_type := exTLBdblFaultRD;
+<         else
+<           i_excp_type := exTLBrefillRD;
+<         end if;
+---
+>   COP0_LLbit: process(rst,phi3)
+>     begin
+>       if rst = '0' then
+>         EX_LLbit    <= '0';             -- break SC -> LL
+>         LL_SC_abort <= '0';             -- inactive
+>       elsif rising_edge(phi3) then
+>         case is_exception is
+>           when exERET =>
+>             EX_LLbit <= '0';            -- break SC -> LL
+>           when exSC   =>
+>             if (LLaddr /= result) or (EX_LLbit = '0') then
+>               LL_SC_abort <= '1';
+>             else
+>               LL_SC_abort <= '0';
+>             end if;
+>           when exLL =>
+>             EX_LLbit <= not LL_update;  -- update only if instr is a LL
+>           when others =>
+>             LL_SC_abort <= '0';
+>         end case;
+2627,2628c2105
+<       i_stage_mm  := TRUE;
+<       i_exception := TRUE;
+---
+>     end process COP0_LLbit;
+2630,2638c2107
+<     elsif i_miss_pc then
+< 
+<       if STATUS(STATUS_EXL) = '1' then
+<         i_excp_type := exTLBdblFaultIF;
+<       else
+<         i_excp_type := exTLBrefillIF;
+<       end if;
+<       i_exception := TRUE;
+<       i_stage_mm  := FALSE;
+---
+>     EX_excp_type <= exNOP;
+2640,2651c2109,2123
+<     elsif hit_mm and EX_aVal = '0' then
+< 
+<       if hit_mm_v = '0' then      -- check for TLBinvalid
+<         if EX_wrmem = '0' then
+<           i_excp_type := exTLBinvalWR;
+<         else
+<           i_excp_type := exTLBinvalRD;
+<         end if;
+<         i_exception := TRUE;
+<       elsif (EX_wrmem = '0' and hit_mm_d = '0') then  -- check for TLBmodified
+<         i_excp_type := exTLBmod;
+<         i_exception := TRUE;
+---
+>   -- ----------------------------------------------------------------------
+>   PIPESTAGE_EXCP_EX_MM: reg_excp_EX_MM
+>     port map (clk, rst, excp_EX_MM_ld, EX_can_trap,MM_can_trap,   
+>               EX_excp_type,MM_excp_type_i, EX_PC,MM_PC,
+>               EX_LLbit,MM_LLbit,
+>               EX_cop0_a_c,MM_cop0_a_c, EX_cop0_val,MM_cop0_val,
+>               EX_trapped, MM_ex_trapped);
+> 
+>     COP0_MM_EXCEPTIONS: process(MM_addr_error, MM_excp_type_i)
+>     begin
+> 
+>       if ( MM_excp_type_i = exNOP and       -- nothing bad from EX
+>            MM_addr_error /= exNOP ) then    -- something wrong in MM
+>         MM_abort <= '1';
+>         MM_excp_type <= MM_addr_error;
+2653,2654c2125,2126
+<         i_excp_type := exNOP;
+<         i_exception := FALSE;
+---
+>         MM_abort <= '0';
+>         MM_excp_type <= exNOP;
+2656,2840d2127
+<       i_stage_mm := TRUE;
+<       
+<     elsif (hit_pc and hit_pc_v = '0' and iaVal = '0') then -- TLBinvalid IF?
+<     
+<       i_excp_type := exTLBinvalIF;
+<       i_stage_mm  := FALSE;
+<       i_exception := TRUE;
+<     
+<     else
+<       i_excp_type := exNOP;
+<       i_stage_mm  := FALSE;
+<       i_exception := FALSE;
+<     end if;
+<   
+<     TLB_excp_type <= i_excp_type;
+<     tlb_stage_MM  <= i_stage_mm;
+<     tlb_exception <= i_exception and not(SL2BOOL(tlb_ex_2));
+<     
+<   end process MMU_exceptions; -- -----------------------------------------
+< 
+<   -- catch only first exception, if there are two in consecutive cycles
+<   U_TLB_EXCP_ONCE: FFD port map (clk, rst, '1',
+<                                  BOOL2SL(tlb_exception), tlb_ex_2);
+<   
+<   TLB_excp_num  <= exception_type'pos(TLB_excp_type); -- for debugging only
+<   
+<   
+<   -- MMU TLB TAG-DATA array -- pg 17 ------------------------------------
+< 
+<   -- TLB_tag: 31..13 = VPN, 12..9 = 0, 8 = G, 7..0 = ASID
+<   -- TLB_dat: 29..6 = PPN, 5..3 = C, 2 = D, 1 = V, 0 = G
+<   
+<   MMU_CONTROL: process(is_exception, INDEX, RANDOM)
+<     variable i_tlb_adr : integer range MMU_CAPACITY-1 downto 0;
+<   begin
+< 
+<     tlb_tag0_updt <= '1';
+<     tlb_tag1_updt <= '1';
+<     tlb_tag2_updt <= '1';
+<     tlb_tag3_updt <= '1';
+<     tlb_tag4_updt <= '1';
+<     tlb_tag5_updt <= '1';
+<     tlb_tag6_updt <= '1';
+<     tlb_tag7_updt <= '1';
+<     
+<     tlb_dat0_updt <= '1';
+<     tlb_dat1_updt <= '1';
+<     tlb_dat2_updt <= '1';
+<     tlb_dat3_updt <= '1';
+<     tlb_dat4_updt <= '1';
+<     tlb_dat5_updt <= '1';
+<     tlb_dat6_updt <= '1';
+<     tlb_dat7_updt <= '1';
+<     
+<     case is_exception is
+<       when exTLBP =>
+<         
+<         tlb_probe <= '1';
+<         tlb_read  <= '0';
+<         i_tlb_adr := 0;
+< 
+<       when exTLBR => 
+< 
+<         tlb_probe <= '0';
+<         tlb_read  <= '1';
+<         i_tlb_adr := to_integer(unsigned(INDEX(MMU_CAPACITY-1 downto 0)));
+< 
+<       when exTLBWI | exTLBWR => 
+< 
+<         tlb_probe <= '0';
+<         tlb_read  <= '0';
+<         if is_exception = exTLBWI then
+<           i_tlb_adr := to_integer(unsigned(INDEX(MMU_CAPACITY-1 downto 0)));
+<         else
+<           i_tlb_adr := to_integer(unsigned(RANDOM));
+<         end if;
+<         case i_tlb_adr is
+<           when 0 => tlb_tag0_updt <= '0'; tlb_dat0_updt <= '0';
+<           when 1 => tlb_tag1_updt <= '0'; tlb_dat1_updt <= '0';
+<           when 2 => tlb_tag2_updt <= '0'; tlb_dat2_updt <= '0';
+<           when 3 => tlb_tag3_updt <= '0'; tlb_dat3_updt <= '0';
+<           when 4 => tlb_tag4_updt <= '0'; tlb_dat4_updt <= '0';
+<           when 5 => tlb_tag5_updt <= '0'; tlb_dat5_updt <= '0';
+<           when 6 => tlb_tag6_updt <= '0'; tlb_dat6_updt <= '0';
+<           when 7 => tlb_tag7_updt <= '0'; tlb_dat7_updt <= '0';
+<           when others => null;
+<         end case;
+<           
+<       when others => 
+<         tlb_probe <= '0';
+<         tlb_read  <= '0';
+<         i_tlb_adr := 0;
+< 
+<     end case;    
+<     
+<     tlb_adr <= i_tlb_adr;
+<     
+<   end process MMU_CONTROL;  ------------------------------------------------
+< 
+< 
+<   with tlb_adr select
+<     e_hi <= tlb_tag0 when 0,
+<             tlb_tag1 when 1,
+<             tlb_tag2 when 2,
+<             tlb_tag3 when 3,
+<             tlb_tag4 when 4,
+<             tlb_tag5 when 5,
+<             tlb_tag6 when 6,
+<             tlb_tag7 when others;
+< 
+<   with tlb_adr select
+<     e_lo0 <= tlb_dat0_0 when 0,
+<              tlb_dat1_0 when 1,
+<              tlb_dat2_0 when 2,
+<              tlb_dat3_0 when 3,
+<              tlb_dat4_0 when 4,
+<              tlb_dat5_0 when 5,
+<              tlb_dat6_0 when 6,
+<              tlb_dat7_0 when others;
+< 
+<   with tlb_adr select
+<     e_lo1 <= tlb_dat0_1 when 0,
+<              tlb_dat1_1 when 1,
+<              tlb_dat2_1 when 2,
+<              tlb_dat3_1 when 3,
+<              tlb_dat4_1 when 4,
+<              tlb_dat5_1 when 5,
+<              tlb_dat6_1 when 6,
+<              tlb_dat7_1 when others;
+<   
+<   -- assert false
+<   -- report "e_hi="&SLV32HEX(e_hi)&" adr="&natural'image(tlb_adr);--DEBUG
+<   
+<   -- tlb_entryhi(EHI_AHI_BIT downto EHI_ALO_BIT)
+<   tlb_entryhi(31 downto PAGE_SZ_BITS + 1)
+<     <= e_hi(TAG_AHI_BIT downto TAG_ALO_BIT);
+<   tlb_entryhi(PAGE_SZ_BITS downto EHI_ASIDHI_BIT+1) <= (others => '0');
+<   tlb_entryhi(EHI_ASIDHI_BIT downto EHI_ASIDLO_BIT)
+<     <= e_hi(TAG_ASIDHI_BIT downto TAG_ASIDLO_BIT);
+< 
+<   tlb_entryLo0(31 downto ELO_AHI_BIT+1) <= (others => '0');
+<   tlb_entryLo0(ELO_AHI_BIT downto ELO_ALO_BIT)
+<     <= e_lo0(DAT_AHI_BIT downto DAT_ALO_BIT);
+<   tlb_entryLo0(ELO_CHI_BIT  downto ELO_CLO_BIT)
+<     <= e_lo0(DAT_CHI_BIT  downto DAT_CLO_BIT);
+<   tlb_entryLo0(ELO_D_BIT) <= e_lo0(DAT_D_BIT);
+<   tlb_entryLo0(ELO_V_BIT) <= e_lo0(DAT_V_BIT);
+<   tlb_entryLo0(ELO_G_BIT) <= e_lo0(DAT_G_BIT);
+<   
+<   tlb_entryLo1(31 downto ELO_AHI_BIT+1) <= (others => '0');
+<   tlb_entryLo1(ELO_AHI_BIT downto ELO_ALO_BIT)
+<     <= e_lo1(DAT_AHI_BIT downto DAT_ALO_BIT);
+<   tlb_entryLo1(ELO_CHI_BIT  downto ELO_CLO_BIT)
+<     <= e_lo1(DAT_CHI_BIT  downto DAT_CLO_BIT);
+<   tlb_entryLo1(ELO_D_BIT) <= e_lo1(DAT_D_BIT);
+<   tlb_entryLo1(ELO_V_BIT) <= e_lo1(DAT_V_BIT);
+<   tlb_entryLo1(ELO_G_BIT) <= e_lo1(DAT_G_BIT);
+< 
+< 
+<   e_hi_inp <= EntryHi(EHI_AHI_BIT downto EHI_ALO_BIT) & EHI_ZEROS &
+<               (EntryLo0(ELO_G_BIT) and EntryLo1(ELO_G_BIT)) &
+<               EntryHi(EHI_ASIDHI_BIT downto EHI_ASIDLO_BIT);  -- pg64
+< 
+<   tlb_tag_inp <= e_hi_inp;
+< 
+<   tlb_dat0_inp <= EntryLo0(ELO_AHI_BIT downto ELO_G_BIT);
+<         
+<   tlb_dat1_inp <= EntryLo1(ELO_AHI_BIT downto ELO_G_BIT);
+< 
+< 
+<   
+<   -- MMU TLB TAG+DATA array -------------------------
+< 
+<   mm <= entryHi(EHI_AHI_BIT downto EHI_ALO_BIT) when tlb_probe = '1' else
+<         v_addr(VA_HI_BIT downto VA_LO_BIT);
+< 
+<   tlb_excp_VA <= MM_v_addr(VA_HI_BIT downto VA_LO_BIT) when MM_tlb_stage_mm else
+<                  PC(VA_HI_BIT downto VA_LO_BIT);
+< 
+< 
+<   -- TLB entry 0 -- initialized to 1st,2nd pages of ROM
+<   --   this mapping must be pinned down at all times (Wired >= 2, see next entry)
+<   
+<   MMU_TAG0: register32 generic map(MMU_ini_tag_ROM0)
+<     port map (clk, rst, tlb_tag0_updt, tlb_tag_inp, tlb_tag0);
+2842,2845c2129,2131
+<   MMU_DAT0_0: registerN generic map(DAT_REG_BITS, MMU_ini_dat_ROM0)
+<     port map (clk, rst, tlb_dat0_updt, tlb_dat0_inp, tlb_dat0_0);  -- d=1,v=1,g=1
+<   MMU_DAT0_1: registerN generic map(DAT_REG_BITS, MMU_ini_dat_ROM1)
+<     port map (clk, rst, tlb_dat0_updt, tlb_dat1_inp, tlb_dat0_1);  -- d=1,v=1,g=1
+---
+>     end process COP0_MM_EXCEPTIONS;
+>                         
+>   -- MM do nothing (while we do not have an MMU) --------------------------  
+2847,2850d2132
+<   hit0_pc <= TRUE when (tlb_tag0(VA_HI_BIT downto VA_LO_BIT) = PC(VA_HI_BIT downto VA_LO_BIT)
+<                         and ( (tlb_tag0(TAG_G_BIT) = '1') OR
+<                               tlb_tag0(ASID_HI_BIT downto 0) = EntryHi(ASID_HI_BIT downto 0) ) )
+<              else FALSE;
+2852,3101d2133
+<   hit0_mm <= TRUE when (tlb_tag0(VA_HI_BIT downto VA_LO_BIT) = mm(VA_HI_BIT downto VA_LO_BIT)
+<                         and ( (tlb_tag0(TAG_G_BIT) = '1') OR
+<                               tlb_tag0(ASID_HI_BIT downto 0) = EntryHi(ASID_HI_BIT downto 0) ) )
+<              else FALSE;
+< 
+<   
+< 
+<   -- TLB entry 1 -- initialized to page with I/O devices
+<   --   this mapping must be pinned down at all times (Wired >= 2)
+< 
+<   MMU_TAG1: register32 generic map(MMU_ini_tag_IO)
+<     port map (clk, rst, tlb_tag1_updt, tlb_tag_inp, tlb_tag1);
+< 
+<   MMU_DAT1_0: registerN generic map(DAT_REG_BITS, MMU_ini_dat_IO0)  -- d=1,v=1,g=1
+<     port map (clk, rst, tlb_dat1_updt, tlb_dat0_inp, tlb_dat1_0);
+<   MMU_DAT1_1: registerN generic map(DAT_REG_BITS, MMU_ini_dat_IO1)  -- d=1,v=1,g=1
+<     port map (clk, rst, tlb_dat1_updt, tlb_dat1_inp, tlb_dat1_1);
+< 
+<   hit1_pc <= TRUE when (tlb_tag1(VA_HI_BIT downto VA_LO_BIT) = PC(VA_HI_BIT downto VA_LO_BIT)
+<                         and ( (tlb_tag1(TAG_G_BIT) = '1') OR
+<                               tlb_tag1(ASID_HI_BIT downto 0) = EntryHi(ASID_HI_BIT downto 0) ) )
+<              else FALSE;
+< 
+<   hit1_mm <= TRUE when (tlb_tag1(VA_HI_BIT downto VA_LO_BIT) = mm(VA_HI_BIT downto VA_LO_BIT)
+<                         and ( (tlb_tag1(TAG_G_BIT) = '1') OR
+<                               tlb_tag1(ASID_HI_BIT downto 0) = EntryHi(ASID_HI_BIT downto 0) ) )
+<              else FALSE;
+< 
+< 
+<   
+<   -- TLB entry 2 -- initialized to 3rd,4th pages of ROM
+<   
+<   MMU_TAG2: register32 generic map(MMU_ini_tag_ROM2)
+<     port map (clk, rst, tlb_tag2_updt, tlb_tag_inp, tlb_tag2);
+< 
+<   MMU_DAT2_0: registerN generic map(DAT_REG_BITS, MMU_ini_dat_ROM2)  -- d=1,v=1,g=1
+<     port map (clk, rst, tlb_dat2_updt, tlb_dat0_inp, tlb_dat2_0);
+<   MMU_DAT2_1: registerN generic map(DAT_REG_BITS, MMU_ini_dat_ROM3)  -- d=1,v=1,g=1
+<     port map (clk, rst, tlb_dat2_updt, tlb_dat1_inp, tlb_dat2_1);
+< 
+<   hit2_pc <= TRUE when (tlb_tag2(VA_HI_BIT downto VA_LO_BIT) = PC(VA_HI_BIT downto VA_LO_BIT)
+<                         and ( (tlb_tag2(TAG_G_BIT) = '1') OR
+<                               tlb_tag2(ASID_HI_BIT downto 0) = EntryHi(ASID_HI_BIT downto 0) ) )
+<              else FALSE;
+< 
+<   hit2_mm <= TRUE when (tlb_tag2(VA_HI_BIT downto VA_LO_BIT) = mm(VA_HI_BIT downto VA_LO_BIT)
+<                         and ( (tlb_tag2(TAG_G_BIT) = '1') OR
+<                               tlb_tag2(ASID_HI_BIT downto 0) = EntryHi(ASID_HI_BIT downto 0) ) )
+<              else FALSE;
+< 
+< 
+< 
+<   -- TLB entry 3 -- initialized to 5th,6th pages of ROM
+<   
+<   MMU_TAG3: register32 generic map(MMU_ini_tag_ROM4)
+<     port map (clk, rst, tlb_tag3_updt, tlb_tag_inp, tlb_tag3);
+< 
+<   MMU_DAT3_0: registerN generic map(DAT_REG_BITS, MMU_ini_dat_ROM5)  -- d=1,v=1,g=1
+<     port map (clk, rst, tlb_dat3_updt, tlb_dat0_inp, tlb_dat3_0);
+<   MMU_DAT3_1: registerN generic map(DAT_REG_BITS, MMU_ini_dat_ROM6)  -- d=1,v=1,g=1
+<     port map (clk, rst, tlb_dat3_updt, tlb_dat1_inp, tlb_dat3_1);
+< 
+<   hit3_pc <= TRUE when (tlb_tag3(VA_HI_BIT downto VA_LO_BIT) = PC(VA_HI_BIT downto VA_LO_BIT)
+<                         and ( (tlb_tag3(TAG_G_BIT) = '1') OR
+<                               tlb_tag3(ASID_HI_BIT downto 0) = EntryHi(ASID_HI_BIT downto 0) ) )
+<              else FALSE;
+< 
+<   hit3_mm <= TRUE when (tlb_tag3(VA_HI_BIT downto VA_LO_BIT) = mm(VA_HI_BIT downto VA_LO_BIT)
+<                         and ( (tlb_tag3(TAG_G_BIT) = '1') OR
+<                               tlb_tag3(ASID_HI_BIT downto 0) = EntryHi(ASID_HI_BIT downto 0) ) )
+<              else FALSE;
+< 
+< 
+<   
+<   -- TLB entry 4 -- initialized to 1st,2nd pages of RAM
+< 
+<   MMU_TAG4: register32 generic map(MMU_ini_tag_RAM0)
+<     port map (clk, rst, tlb_tag4_updt, tlb_tag_inp, tlb_tag4);
+< 
+<   MMU_DAT4_0: registerN generic map(DAT_REG_BITS, MMU_ini_dat_RAM0)  -- d=1,v=1,g=1
+<     port map (clk, rst, tlb_dat4_updt, tlb_dat0_inp, tlb_dat4_0);
+<   MMU_DAT4_1: registerN generic map(DAT_REG_BITS, MMU_ini_dat_RAM1)  -- d=1,v=1,g=1
+<     port map (clk, rst, tlb_dat4_updt, tlb_dat1_inp, tlb_dat4_1);
+< 
+<   hit4_pc <= TRUE when (tlb_tag4(VA_HI_BIT downto VA_LO_BIT) = PC(VA_HI_BIT downto VA_LO_BIT)
+<                         and ( (tlb_tag4(TAG_G_BIT) = '1') OR
+<                               tlb_tag4(ASID_HI_BIT downto 0) = EntryHi(ASID_HI_BIT downto 0) ) )
+<              else FALSE;
+< 
+<   hit4_mm <= TRUE when (tlb_tag4(VA_HI_BIT downto VA_LO_BIT) = mm(VA_HI_BIT downto VA_LO_BIT)
+<                         and ( (tlb_tag4(TAG_G_BIT) = '1') OR
+<                               tlb_tag4(ASID_HI_BIT downto 0) = EntryHi(ASID_HI_BIT downto 0) ) )
+<              else FALSE;
+< 
+< 
+<   
+<   -- TLB entry 5 -- initialized to 3rd,4th pages of RAM
+<   
+<   MMU_TAG5: register32 generic map(MMU_ini_tag_RAM2)
+<     port map (clk, rst, tlb_tag5_updt, tlb_tag_inp, tlb_tag5);
+< 
+<   MMU_DAT5_0: registerN generic map(DAT_REG_BITS, MMU_ini_dat_RAM2)  -- d=1,v=1,g=1
+<     port map (clk, rst, tlb_dat5_updt, tlb_dat0_inp, tlb_dat5_0);
+<   MMU_DAT5_1: registerN generic map(DAT_REG_BITS, MMU_ini_dat_RAM3)  -- d=1,v=1,g=1
+<     port map (clk, rst, tlb_dat5_updt, tlb_dat1_inp, tlb_dat5_1);
+< 
+<   hit5_pc <= TRUE when (tlb_tag5(VA_HI_BIT downto VA_LO_BIT) = PC(VA_HI_BIT downto VA_LO_BIT)
+<                         and ( (tlb_tag5(TAG_G_BIT) = '1') OR
+<                               tlb_tag5(ASID_HI_BIT downto 0) = EntryHi(ASID_HI_BIT downto 0) ) )
+<              else FALSE;
+< 
+<   hit5_mm <= TRUE when (tlb_tag5(VA_HI_BIT downto VA_LO_BIT) = mm(VA_HI_BIT downto VA_LO_BIT)
+<                         and ( (tlb_tag5(TAG_G_BIT) = '1') OR
+<                               tlb_tag5(ASID_HI_BIT downto 0) = EntryHi(ASID_HI_BIT downto 0) ) )
+<              else FALSE;
+< 
+< 
+< 
+<   -- TLB entry 6 -- initialized to 5th,6th pages of RAM
+<   
+<   MMU_TAG6: register32 generic map(MMU_ini_tag_RAM4)
+<     port map (clk, rst, tlb_tag6_updt, tlb_tag_inp, tlb_tag6);
+< 
+<   MMU_DAT6_0: registerN generic map(DAT_REG_BITS, MMU_ini_dat_RAM4)  -- d=1,v=1,g=1
+<     port map (clk, rst, tlb_dat6_updt, tlb_dat0_inp, tlb_dat6_0);
+<   MMU_DAT6_1: registerN generic map(DAT_REG_BITS, MMU_ini_dat_RAM5)  -- d=1,v=1,g=1
+<     port map (clk, rst, tlb_dat6_updt, tlb_dat1_inp, tlb_dat6_1);
+< 
+<   hit6_pc <= TRUE when (tlb_tag6(VA_HI_BIT downto VA_LO_BIT) = PC(VA_HI_BIT downto VA_LO_BIT)
+<                         and ( (tlb_tag6(TAG_G_BIT) = '1') OR
+<                               tlb_tag6(ASID_HI_BIT downto 0) = EntryHi(ASID_HI_BIT downto 0) ) )
+<              else FALSE;
+< 
+<   hit6_mm <= TRUE when (tlb_tag6(VA_HI_BIT downto VA_LO_BIT) = mm(VA_HI_BIT downto VA_LO_BIT)
+<                         and ( (tlb_tag6(TAG_G_BIT) = '1') OR
+<                               tlb_tag6(ASID_HI_BIT downto 0) = EntryHi(ASID_HI_BIT downto 0) ) )
+<              else FALSE;
+< 
+< 
+<   -- TLB entry 7 -- initialized to 7th,8th pages of RAM = stack
+<   
+<   MMU_TAG7: register32 generic map(MMU_ini_tag_RAM6)
+<     port map (clk, rst, tlb_tag7_updt, tlb_tag_inp, tlb_tag7);
+< 
+<   MMU_DAT7_0: registerN generic map(DAT_REG_BITS, MMU_ini_dat_RAM6)  -- d=1,v=1,g=1
+<     port map (clk, rst, tlb_dat7_updt, tlb_dat0_inp, tlb_dat7_0);
+<   MMU_DAT7_1: registerN generic map(DAT_REG_BITS, MMU_ini_dat_RAM7)  -- d=1,v=1,g=1
+<     port map (clk, rst, tlb_dat7_updt, tlb_dat1_inp, tlb_dat7_1);
+< 
+<   hit7_pc <= TRUE when (tlb_tag7(VA_HI_BIT downto VA_LO_BIT) = PC(VA_HI_BIT downto VA_LO_BIT)
+<                        and ( (tlb_tag7(TAG_G_BIT) = '1') OR
+<                              tlb_tag7(ASID_HI_BIT downto 0) = EntryHi(ASID_HI_BIT downto 0) ) )
+<              else FALSE;
+< 
+<   hit7_mm <= TRUE when (tlb_tag7(VA_HI_BIT downto VA_LO_BIT) = mm(VA_HI_BIT downto VA_LO_BIT)
+<                     and ( (tlb_tag7(TAG_G_BIT) = '1') OR
+<                           tlb_tag7(ASID_HI_BIT downto 0) = EntryHi(ASID_HI_BIT downto 0) ) )
+<              else FALSE;
+< 
+<   -- end of TLB TAG+DATA ARRAY ----------------------------------------
+< 
+<   
+<   -- select mapping for IF --------------------------------------------
+<   
+<   tlb_a2_pc <= 4 when (hit4_pc or hit5_pc or hit6_pc or hit7_pc) else 0;
+<   tlb_a1_pc <= 2 when (hit2_pc or hit3_pc or hit6_pc or hit7_pc) else 0;
+<   tlb_a0_pc <= 1 when (hit1_pc or hit3_pc or hit5_pc or hit7_pc) else 0;
+<   
+<   hit_pc    <= hit0_pc or hit1_pc or hit2_pc or hit3_pc or
+<                hit4_pc or hit5_pc or hit6_pc or hit7_pc;
+< 
+<   hit_pc_adr <= (tlb_a2_pc + tlb_a1_pc + tlb_a0_pc);
+< 
+<   with hit_pc_adr select
+<     tlb_ppn_pc0 <= tlb_dat0_0 when 0,
+<                    tlb_dat1_0 when 1,
+<                    tlb_dat2_0 when 2,
+<                    tlb_dat3_0 when 3,
+<                    tlb_dat4_0 when 4,
+<                    tlb_dat5_0 when 5,
+<                    tlb_dat6_0 when 6,
+<                    tlb_dat7_0 when others;
+< 
+<   with hit_pc_adr select
+<     tlb_ppn_pc1 <= tlb_dat0_1 when 0,
+<                    tlb_dat1_1 when 1,
+<                    tlb_dat2_1 when 2,
+<                    tlb_dat3_1 when 3,
+<                    tlb_dat4_1 when 4,
+<                    tlb_dat5_1 when 5,
+<                    tlb_dat6_1 when 6,
+<                    tlb_dat7_1 when others;
+< 
+<   tlb_ppn_pc <= tlb_ppn_pc0(DAT_AHI_BIT downto DAT_ALO_BIT)
+<                      when PC(PAGE_SZ_BITS) = '0'
+<                 else tlb_ppn_pc1(DAT_AHI_BIT downto DAT_ALO_BIT);
+< 
+<   hit_pc_v   <= tlb_ppn_pc0(DAT_V_BIT) when PC(PAGE_SZ_BITS) = '0' else
+<                 tlb_ppn_pc1(DAT_V_BIT);
+<   
+<   phy_i_addr <= tlb_ppn_pc(PPN_BITS-1 downto 0) & PC(PAGE_SZ_BITS-1 downto 0);
+< 
+< 
+<   -- select mapping for MM --------------------------------------------
+< 
+<   tlb_a2_mm <= 4 when (hit4_mm or hit5_mm or hit6_mm or hit7_mm) else 0;
+<   tlb_a1_mm <= 2 when (hit2_mm or hit3_mm or hit6_mm or hit7_mm) else 0;
+<   tlb_a0_mm <= 1 when (hit1_mm or hit3_mm or hit5_mm or hit7_mm) else 0;
+<   
+<   hit_mm    <= (hit0_mm or hit1_mm or hit2_mm or hit3_mm or
+<                 hit4_mm or hit5_mm or hit6_mm or hit7_mm); 
+<                -- and EX_mem_t /= b"0000";  -- hit AND is load or store
+< 
+<   hit_mm_adr <= (tlb_a2_mm + tlb_a1_mm + tlb_a0_mm);
+<   
+<   with hit_mm_adr select
+<     tlb_ppn_mm0 <= tlb_dat0_0 when 0,
+<                    tlb_dat1_0 when 1,
+<                    tlb_dat2_0 when 2,
+<                    tlb_dat3_0 when 3,
+<                    tlb_dat4_0 when 4,
+<                    tlb_dat5_0 when 5,
+<                    tlb_dat6_0 when 6,
+<                    tlb_dat7_0 when others;
+< 
+<   with hit_mm_adr select
+<     tlb_ppn_mm1 <= tlb_dat0_1 when 0,
+<                    tlb_dat1_1 when 1,
+<                    tlb_dat2_1 when 2,
+<                    tlb_dat3_1 when 3,
+<                    tlb_dat4_1 when 4,
+<                    tlb_dat5_1 when 5,
+<                    tlb_dat6_1 when 6,
+<                    tlb_dat7_1 when others;
+< 
+<   tlb_ppn_mm <= tlb_ppn_mm0(DAT_AHI_BIT downto DAT_ALO_BIT) when v_addr(PAGE_SZ_BITS) = '0' else
+<                 tlb_ppn_mm1(DAT_AHI_BIT downto DAT_ALO_BIT);
+<   
+<   hit_mm_v   <= tlb_ppn_mm0(DAT_V_BIT) when v_addr(PAGE_SZ_BITS) = '0' else
+<                 tlb_ppn_mm1(DAT_V_BIT);
+< 
+<   hit_mm_d   <= tlb_ppn_mm0(DAT_D_BIT) when v_addr(PAGE_SZ_BITS) = '0' else
+<                 tlb_ppn_mm1(DAT_D_BIT);
+< 
+<   phy_d_addr <= tlb_ppn_mm(PPN_BITS-1 downto 0) & v_addr(PAGE_SZ_BITS-1 downto 0);
+< 
+<   
+<   -- MMU-TLB == end =======================================================
+< 
+<     
+3106,3109c2138,2141
+<     port map (clk, rst, excp_MM_WB_ld,
+<               MM_PC,WB_PC, MM_LLbit,WB_LLbit, 
+<               MM_is_delayslot,WB_is_delayslot,
+<               MM_cop0_val,WB_cop0_val);
+---
+>     port map (clk, rst, excp_MM_WB_ld, MM_can_trap,WB_can_trap,   
+>               MM_excp_type, WB_excp_type, MM_PC,WB_PC,
+>               MM_LLbit,WB_LLbit, MM_abort,WB_abort, 
+>               MM_cop0_a_c,WB_cop0_a_c, MM_cop0_val,WB_cop0_val);

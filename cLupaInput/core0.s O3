@@ -1,0 +1,474 @@
+	.file	1 "core0.c"
+	.section .mdebug.abi32
+	.previous
+	.text
+	.align	2
+	.globl	contrasteVerde
+	.set	nomips16
+	.ent	contrasteVerde
+	.type	contrasteVerde, @function
+contrasteVerde:
+	.frame	$sp,0,$31		# vars= 0, regs= 0/0, args= 0, gp= 0
+	.mask	0x00000000,0
+	.fmask	0x00000000,0
+	.set	noreorder
+	.set	nomacro
+	sra	$2,$4,16
+	andi	$2,$2,0xff
+	srl	$3,$4,24
+	addu	$3,$2,$3
+	sll	$3,$3,1
+	sra	$4,$4,8
+	addu	$3,$3,$2
+	andi	$4,$4,0xff
+	addu	$4,$3,$4
+	li	$3,7			# 0x7
+	bne	$3,$0,1f
+	div	$0,$4,$3
+	break	7
+1:
+	li	$3,255			# 0xff
+	mflo	$4
+	nop
+	nop
+	mult	$4,$2
+	mflo	$2
+	nop
+	nop
+	bne	$3,$0,1f
+	divu	$0,$2,$3
+	break	7
+1:
+	mflo	$2
+	sltu	$3,$2,127
+	beq	$3,$0,$L5
+	nop
+
+	j	$31
+	li	$2,255			# 0xff
+
+$L5:
+	sll	$2,$2,16
+	j	$31
+	ori	$2,$2,0xff
+
+	.set	macro
+	.set	reorder
+	.end	contrasteVerde
+	.size	contrasteVerde, .-contrasteVerde
+	.align	2
+	.globl	contrasteVermelho
+	.set	nomips16
+	.ent	contrasteVermelho
+	.type	contrasteVermelho, @function
+contrasteVermelho:
+	.frame	$sp,0,$31		# vars= 0, regs= 0/0, args= 0, gp= 0
+	.mask	0x00000000,0
+	.fmask	0x00000000,0
+	.set	noreorder
+	.set	nomacro
+	sra	$5,$4,16
+	srl	$3,$4,24
+	andi	$5,$5,0xff
+	addu	$2,$5,$3
+	sll	$2,$2,1
+	sra	$4,$4,8
+	addu	$5,$2,$5
+	andi	$4,$4,0xff
+	addu	$4,$5,$4
+	li	$2,6			# 0x6
+	bne	$2,$0,1f
+	div	$0,$4,$2
+	break	7
+1:
+	li	$2,255			# 0xff
+	mflo	$4
+	nop
+	nop
+	mult	$4,$3
+	mflo	$3
+	nop
+	nop
+	bne	$2,$0,1f
+	divu	$0,$3,$2
+	break	7
+1:
+	mflo	$2
+	sll	$2,$2,24
+	j	$31
+	ori	$2,$2,0xff
+
+	.set	macro
+	.set	reorder
+	.end	contrasteVermelho
+	.size	contrasteVermelho, .-contrasteVermelho
+	.align	2
+	.globl	contrasteCinza
+	.set	nomips16
+	.ent	contrasteCinza
+	.type	contrasteCinza, @function
+contrasteCinza:
+	.frame	$sp,0,$31		# vars= 0, regs= 0/0, args= 0, gp= 0
+	.mask	0x00000000,0
+	.fmask	0x00000000,0
+	.set	noreorder
+	.set	nomacro
+	sra	$3,$4,16
+	sra	$2,$4,8
+	andi	$3,$3,0xff
+	andi	$2,$2,0xff
+	addu	$2,$3,$2
+	srl	$4,$4,24
+	addu	$4,$2,$4
+	li	$2,3			# 0x3
+	bne	$2,$0,1f
+	div	$0,$4,$2
+	break	7
+1:
+	mflo	$4
+	sll	$3,$4,24
+	sll	$2,$4,16
+	or	$2,$3,$2
+	sll	$4,$4,8
+	ori	$2,$2,0xff
+	j	$31
+	or	$2,$2,$4
+
+	.set	macro
+	.set	reorder
+	.end	contrasteCinza
+	.size	contrasteCinza, .-contrasteCinza
+	.section	.text.startup,"ax",@progbits
+	.align	2
+	.globl	main
+	.set	nomips16
+	.ent	main
+	.type	main, @function
+main:
+	.frame	$sp,64,$31		# vars= 8, regs= 10/0, args= 16, gp= 0
+	.mask	0xc0ff0000,-4
+	.fmask	0x00000000,0
+	.set	noreorder
+	.set	nomacro
+	addiu	$sp,$sp,-64
+	lui	$2,%hi(zoomCfg)
+	addiu	$4,$2,%lo(zoomCfg)
+	sw	$20,40($sp)
+	lui	$20,%hi(contrastecfg)
+	sw	$31,60($sp)
+	sw	$19,36($sp)
+	sw	$fp,56($sp)
+	sw	$23,52($sp)
+	sw	$22,48($sp)
+	sw	$21,44($sp)
+	sw	$18,32($sp)
+	sw	$17,28($sp)
+	jal	readInt
+	sw	$16,24($sp)
+
+	jal	readInt
+	addiu	$4,$20,%lo(contrastecfg)
+
+	li	$3,3			# 0x3
+	sw	$3,20($sp)
+	lui	$19,%hi(img)
+$L38:
+	li	$4,16777216			# 0x1000000
+	li	$2,262144			# 0x40000
+	ori	$4,$4,0x200
+	li	$5,4			# 0x4
+	jal	dmaUSB_init
+	ori	$6,$2,0xb000
+
+$L55:
+	jal	dmaUSB_st
+	nop
+
+	bne	$2,$0,$L55
+	lui	$3,%hi(zoomCfg)
+
+	lw	$2,%lo(zoomCfg)($3)
+	li	$3,16777216			# 0x1000000
+	ori	$3,$3,0x200
+	beq	$2,$0,$L10
+	sw	$3,%lo(img)($19)
+
+	li	$2,262144			# 0x40000
+	ori	$2,$2,0xb280
+	sw	$2,16($sp)
+	li	$21,2			# 0x2
+	li	$fp,7			# 0x7
+	li	$22,255			# 0xff
+$L14:
+	lw	$17,16($sp)
+	li	$16,160			# 0xa0
+	li	$18,3			# 0x3
+	li	$23,1			# 0x1
+$L36:
+	jal	bcdWSt
+	nop
+
+	beq	$2,$0,$L36
+	nop
+
+	lw	$3,%lo(img)($19)
+	lw	$2,%lo(contrastecfg)($20)
+	addu	$3,$3,$17
+	lw	$4,0($3)
+	beq	$2,$21,$L28
+	nop
+
+	beq	$2,$18,$L29
+	sra	$3,$4,16
+
+	bne	$2,$23,$L33
+	srl	$2,$4,24
+
+	andi	$3,$3,0xff
+	addu	$5,$3,$2
+	sll	$5,$5,1
+	sra	$4,$4,8
+	addu	$3,$5,$3
+	andi	$4,$4,0xff
+	addu	$4,$3,$4
+	li	$3,6			# 0x6
+	bne	$3,$0,1f
+	div	$0,$4,$3
+	break	7
+1:
+	mflo	$3
+	nop
+	nop
+	mult	$3,$2
+	mflo	$2
+	nop
+	nop
+	bne	$22,$0,1f
+	divu	$0,$2,$22
+	break	7
+1:
+	mflo	$4
+	sll	$4,$4,24
+	ori	$4,$4,0xff
+$L33:
+	jal	bcdWWr
+	addiu	$16,$16,1
+
+	li	$2,480			# 0x1e0
+	bne	$16,$2,$L36
+	addiu	$17,$17,4
+
+	lw	$3,16($sp)
+	li	$2,917504			# 0xe0000
+	addiu	$3,$3,2560
+	ori	$2,$2,0x1280
+	bne	$3,$2,$L14
+	sw	$3,16($sp)
+
+$L24:
+	lw	$3,20($sp)
+	nop
+	addiu	$3,$3,-1
+	bne	$3,$0,$L38
+	sw	$3,20($sp)
+
+$L39:
+	j	$L39
+	nop
+
+$L29:
+	sra	$2,$4,8
+	andi	$3,$3,0xff
+	andi	$2,$2,0xff
+	addu	$2,$3,$2
+	srl	$4,$4,24
+	addu	$2,$2,$4
+	bne	$18,$0,1f
+	div	$0,$2,$18
+	break	7
+1:
+	mflo	$2
+	sll	$4,$2,24
+	sll	$3,$2,16
+	or	$4,$4,$3
+	ori	$4,$4,0xff
+	sll	$2,$2,8
+	j	$L33
+	or	$4,$4,$2
+
+$L28:
+	sra	$2,$4,16
+	andi	$2,$2,0xff
+	srl	$3,$4,24
+	addu	$3,$2,$3
+	sll	$3,$3,1
+	sra	$4,$4,8
+	addu	$3,$3,$2
+	andi	$4,$4,0xff
+	addu	$3,$3,$4
+	bne	$fp,$0,1f
+	div	$0,$3,$fp
+	break	7
+1:
+	mflo	$3
+	nop
+	nop
+	mult	$3,$2
+	mflo	$2
+	nop
+	nop
+	bne	$22,$0,1f
+	divu	$0,$2,$22
+	break	7
+1:
+	mflo	$2
+	sltu	$3,$2,127
+	beq	$3,$0,$L58
+	sll	$2,$2,16
+
+	j	$L33
+	li	$4,255			# 0xff
+
+$L58:
+	j	$L33
+	ori	$4,$2,0xff
+
+$L10:
+	move	$17,$0
+	li	$21,2			# 0x2
+	li	$22,7			# 0x7
+	li	$16,255			# 0xff
+	li	$18,3			# 0x3
+$L25:
+	jal	bcdWSt
+	nop
+
+	beq	$2,$0,$L25
+	nop
+
+	lw	$2,%lo(img)($19)
+	lw	$3,%lo(contrastecfg)($20)
+	addu	$2,$2,$17
+	lw	$2,0($2)
+	beq	$3,$21,$L17
+	srl	$4,$2,24
+
+	beq	$3,$18,$L18
+	sra	$4,$2,16
+
+	li	$4,1			# 0x1
+	beq	$3,$4,$L59
+	sra	$4,$2,16
+
+	move	$4,$2
+$L22:
+	jal	bcdWWr
+	addiu	$17,$17,4
+
+	li	$2,1179648			# 0x120000
+	ori	$2,$2,0xc000
+	bne	$17,$2,$L25
+	nop
+
+	j	$L24
+	nop
+
+$L17:
+	sra	$3,$2,16
+	andi	$3,$3,0xff
+	addu	$4,$3,$4
+	sll	$4,$4,1
+	sra	$2,$2,8
+	addu	$4,$4,$3
+	andi	$2,$2,0xff
+	addu	$2,$4,$2
+	bne	$22,$0,1f
+	div	$0,$2,$22
+	break	7
+1:
+	mflo	$2
+	nop
+	nop
+	mult	$2,$3
+	mflo	$3
+	nop
+	nop
+	bne	$16,$0,1f
+	divu	$0,$3,$16
+	break	7
+1:
+	mflo	$3
+	sltu	$2,$3,127
+	beq	$2,$0,$L60
+	sll	$3,$3,16
+
+	j	$L22
+	li	$4,255			# 0xff
+
+$L59:
+	srl	$3,$2,24
+	andi	$4,$4,0xff
+	addu	$5,$4,$3
+	sll	$5,$5,1
+	sra	$2,$2,8
+	andi	$2,$2,0xff
+	addu	$4,$5,$4
+	addu	$4,$4,$2
+	li	$2,6			# 0x6
+	bne	$2,$0,1f
+	div	$0,$4,$2
+	break	7
+1:
+	mflo	$2
+	nop
+	nop
+	mult	$2,$3
+	mflo	$3
+	nop
+	nop
+	bne	$16,$0,1f
+	divu	$0,$3,$16
+	break	7
+1:
+	mflo	$4
+	sll	$4,$4,24
+	j	$L22
+	ori	$4,$4,0xff
+
+$L18:
+	sra	$3,$2,8
+	andi	$4,$4,0xff
+	andi	$3,$3,0xff
+	addu	$3,$4,$3
+	srl	$2,$2,24
+	addu	$2,$3,$2
+	bne	$18,$0,1f
+	div	$0,$2,$18
+	break	7
+1:
+	mflo	$2
+	sll	$4,$2,24
+	sll	$3,$2,16
+	or	$4,$4,$3
+	ori	$4,$4,0xff
+	sll	$2,$2,8
+	j	$L22
+	or	$4,$4,$2
+
+$L60:
+	j	$L22
+	ori	$4,$3,0xff
+
+	.set	macro
+	.set	reorder
+	.end	main
+	.size	main, .-main
+
+	.comm	img,4,4
+
+	.comm	contrastecfg,4,4
+
+	.comm	zoomCfg,4,4
+
+	.comm	totalPixelImg,4,4
+	.ident	"GCC: (GNU) 4.8.1"

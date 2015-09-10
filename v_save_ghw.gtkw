@@ -1,0 +1,44 @@
+[*]
+[*] GTKWave Analyzer v3.3.58 (w)1999-2014 BSI
+[*] Tue Dec  2 18:21:55 2014
+[*]
+[dumpfile] "/home/bellorini/cmips-code_rev94_dual_DMA_VGA/cMIPS/v_cMIPS.ghw"
+[dumpfile_mtime] "Tue Dec  2 18:21:50 2014"
+[dumpfile_size] 8616274
+[savefile] "/home/bellorini/cmips-code_rev94_dual_DMA_VGA/cMIPS/v_save_ghw.gtkw"
+[timestart] 0
+[size] 1920 1030
+[pos] -1 -1
+*-26.904606 601100000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] top.
+[treeopen] top.tb_cmips.
+[treeopen] top.tb_cmips.u_data_addr_dec.
+[treeopen] top.tb_cmips.u_data_addr_dec_1.
+[sst_width] 262
+[signals_width] 219
+[sst_expanded] 1
+[sst_vpaned_height] 302
+@28
+top.tb_cmips.clk
+@200
+-CORE 0
+@28
+top.tb_cmips.u_data_addr_dec.rst
+top.tb_cmips.u_data_addr_dec.cpu_d_aval
+top.tb_cmips.u_data_addr_dec.dmausb_sel
+@22
+#{top.tb_cmips.u_data_addr_dec.dev_select[4:0]} top.tb_cmips.u_data_addr_dec.dev_select[4] top.tb_cmips.u_data_addr_dec.dev_select[3] top.tb_cmips.u_data_addr_dec.dev_select[2] top.tb_cmips.u_data_addr_dec.dev_select[1] top.tb_cmips.u_data_addr_dec.dev_select[0]
+@200
+-DMA_USB
+@22
+#{top.tb_cmips.u_dmausb.dma_addr[31:0]} top.tb_cmips.u_dmausb.dma_addr[31] top.tb_cmips.u_dmausb.dma_addr[30] top.tb_cmips.u_dmausb.dma_addr[29] top.tb_cmips.u_dmausb.dma_addr[28] top.tb_cmips.u_dmausb.dma_addr[27] top.tb_cmips.u_dmausb.dma_addr[26] top.tb_cmips.u_dmausb.dma_addr[25] top.tb_cmips.u_dmausb.dma_addr[24] top.tb_cmips.u_dmausb.dma_addr[23] top.tb_cmips.u_dmausb.dma_addr[22] top.tb_cmips.u_dmausb.dma_addr[21] top.tb_cmips.u_dmausb.dma_addr[20] top.tb_cmips.u_dmausb.dma_addr[19] top.tb_cmips.u_dmausb.dma_addr[18] top.tb_cmips.u_dmausb.dma_addr[17] top.tb_cmips.u_dmausb.dma_addr[16] top.tb_cmips.u_dmausb.dma_addr[15] top.tb_cmips.u_dmausb.dma_addr[14] top.tb_cmips.u_dmausb.dma_addr[13] top.tb_cmips.u_dmausb.dma_addr[12] top.tb_cmips.u_dmausb.dma_addr[11] top.tb_cmips.u_dmausb.dma_addr[10] top.tb_cmips.u_dmausb.dma_addr[9] top.tb_cmips.u_dmausb.dma_addr[8] top.tb_cmips.u_dmausb.dma_addr[7] top.tb_cmips.u_dmausb.dma_addr[6] top.tb_cmips.u_dmausb.dma_addr[5] top.tb_cmips.u_dmausb.dma_addr[4] top.tb_cmips.u_dmausb.dma_addr[3] top.tb_cmips.u_dmausb.dma_addr[2] top.tb_cmips.u_dmausb.dma_addr[1] top.tb_cmips.u_dmausb.dma_addr[0]
+#{top.tb_cmips.u_dmausb.dma_data_in[31:0]} top.tb_cmips.u_dmausb.dma_data_in[31] top.tb_cmips.u_dmausb.dma_data_in[30] top.tb_cmips.u_dmausb.dma_data_in[29] top.tb_cmips.u_dmausb.dma_data_in[28] top.tb_cmips.u_dmausb.dma_data_in[27] top.tb_cmips.u_dmausb.dma_data_in[26] top.tb_cmips.u_dmausb.dma_data_in[25] top.tb_cmips.u_dmausb.dma_data_in[24] top.tb_cmips.u_dmausb.dma_data_in[23] top.tb_cmips.u_dmausb.dma_data_in[22] top.tb_cmips.u_dmausb.dma_data_in[21] top.tb_cmips.u_dmausb.dma_data_in[20] top.tb_cmips.u_dmausb.dma_data_in[19] top.tb_cmips.u_dmausb.dma_data_in[18] top.tb_cmips.u_dmausb.dma_data_in[17] top.tb_cmips.u_dmausb.dma_data_in[16] top.tb_cmips.u_dmausb.dma_data_in[15] top.tb_cmips.u_dmausb.dma_data_in[14] top.tb_cmips.u_dmausb.dma_data_in[13] top.tb_cmips.u_dmausb.dma_data_in[12] top.tb_cmips.u_dmausb.dma_data_in[11] top.tb_cmips.u_dmausb.dma_data_in[10] top.tb_cmips.u_dmausb.dma_data_in[9] top.tb_cmips.u_dmausb.dma_data_in[8] top.tb_cmips.u_dmausb.dma_data_in[7] top.tb_cmips.u_dmausb.dma_data_in[6] top.tb_cmips.u_dmausb.dma_data_in[5] top.tb_cmips.u_dmausb.dma_data_in[4] top.tb_cmips.u_dmausb.dma_data_in[3] top.tb_cmips.u_dmausb.dma_data_in[2] top.tb_cmips.u_dmausb.dma_data_in[1] top.tb_cmips.u_dmausb.dma_data_in[0]
+#{top.tb_cmips.u_dmausb.dma_data_out[31:0]} top.tb_cmips.u_dmausb.dma_data_out[31] top.tb_cmips.u_dmausb.dma_data_out[30] top.tb_cmips.u_dmausb.dma_data_out[29] top.tb_cmips.u_dmausb.dma_data_out[28] top.tb_cmips.u_dmausb.dma_data_out[27] top.tb_cmips.u_dmausb.dma_data_out[26] top.tb_cmips.u_dmausb.dma_data_out[25] top.tb_cmips.u_dmausb.dma_data_out[24] top.tb_cmips.u_dmausb.dma_data_out[23] top.tb_cmips.u_dmausb.dma_data_out[22] top.tb_cmips.u_dmausb.dma_data_out[21] top.tb_cmips.u_dmausb.dma_data_out[20] top.tb_cmips.u_dmausb.dma_data_out[19] top.tb_cmips.u_dmausb.dma_data_out[18] top.tb_cmips.u_dmausb.dma_data_out[17] top.tb_cmips.u_dmausb.dma_data_out[16] top.tb_cmips.u_dmausb.dma_data_out[15] top.tb_cmips.u_dmausb.dma_data_out[14] top.tb_cmips.u_dmausb.dma_data_out[13] top.tb_cmips.u_dmausb.dma_data_out[12] top.tb_cmips.u_dmausb.dma_data_out[11] top.tb_cmips.u_dmausb.dma_data_out[10] top.tb_cmips.u_dmausb.dma_data_out[9] top.tb_cmips.u_dmausb.dma_data_out[8] top.tb_cmips.u_dmausb.dma_data_out[7] top.tb_cmips.u_dmausb.dma_data_out[6] top.tb_cmips.u_dmausb.dma_data_out[5] top.tb_cmips.u_dmausb.dma_data_out[4] top.tb_cmips.u_dmausb.dma_data_out[3] top.tb_cmips.u_dmausb.dma_data_out[2] top.tb_cmips.u_dmausb.dma_data_out[1] top.tb_cmips.u_dmausb.dma_data_out[0]
+@29
+top.tb_cmips.u_dmausb.dma_we
+@28
+top.tb_cmips.u_dmausb.dma_sel
+@200
+-DMA_VGA
+[pattern_trace] 1
+[pattern_trace] 0
