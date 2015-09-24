@@ -387,4 +387,108 @@ int readCounter(void) {
 }; //--------------------------------------------------------------------
 
 
+// ONLY core-0
+// BCD -- Write data on BCD Write ---------------------------------------
+// n => 32bits data to write on BCD
+void bcdWWr(int n){
+  int *IO = (int *)IO_BCDW_ADDR;
+  *IO = n;
+}; //--------------------------------------------------------------------
+
+// ONLY core-0
+// BCD -- Read status from BCD write ------------------------------------
+// return # free words left on BCD Write
+int bcdWSt(void){
+  int *IO = (int *)IO_BCDW_ADDR;
+  return *IO; 
+}; //--------------------------------------------------------------------
+
+// ONLY core-1
+// BCD -- Read word from BCD Read -------------------------------------
+// return a valid word on BCD Read
+int bcdRRd(void){
+  int *IO = (int *)IO_BCDR_ADDR;
+  return *IO; 
+}; //--------------------------------------------------------------------
+
+// ONLY core-1
+// BCD -- Read status from BCD Read -------------------------------------
+// return # valid words left on BCD Read
+int bcdRSt(void){
+  int *IO = (int *)IO_BCDR_ADDR;
+  return *(IO+1); 
+}; //--------------------------------------------------------------------
+
+// ONLY core-0
+// USB_DMA -- Initialize module -----------------------------------------
+// int a > first byte address 
+// int w > number of words
+// int s > size, in bytes, of each word
+void dmaUSB_init(int a, int w, int s){
+  int *IO;
+
+  int size;
+
+//  size = ((w-1)*s) - 1;
+  size = (w*s)-1;
+
+  IO = (int *) IO_DMA_USB_ADDR;
+  // Initial Addres
+  *IO = a;
+  // Size, in bytes, of what transfer to RAM
+  IO++;
+  *IO = size;
+  // Definitely starts transfer
+  IO++;
+  *IO = 0;
+}; //--------------------------------------------------------------------
+
+// ONLY core-0
+// USB_DMA -- Initialize module -----------------------------------------
+int  dmaUSB_st(){
+  int *IO = (int *) IO_DMA_USB_ADDR;
+  return *IO;
+}; //--------------------------------------------------------------------
+
+// ONLY core-1
+// DMA_VGA -- Initialize module -----------------------------------------
+// int a > first byte address 
+// int w > number of words
+// int s > size, in bytes, of each word
+void dmaVGA_init(int a, int w, int s){
+  int *IO;
+
+  int size;
+
+//  size = ((w-1)*s) - 1;
+  size = (w*s)-1;
+
+  IO = (int *) IO_DMA_VGA_ADDR;
+  // Initial Addres
+  *IO = a;
+  // Size, in bytes, of what transfer to RAM
+  IO++;
+  *IO = size;
+  // Definitely starts transfer
+  IO++;
+  *IO = 0;
+}; //--------------------------------------------------------------------
+
+// ONLY core-1
+// DMA_VGA -- Initialize module -----------------------------------------
+int  dmaVGA_st(){
+  int *IO = (int *) IO_DMA_VGA_ADDR;
+  return *IO;
+}; //--------------------------------------------------------------------
+
+// ONLY core-1
+// DMA_VGA -- close file -----------------------------------------
+int  dmaVGA_closeFile(){
+  int *IO = (int *) IO_DMA_VGA_ADDR;  
+  IO++;
+  IO++;
+  IO++;
+  return *IO;
+}; //-------------------------------------------------------------------- 
+
 

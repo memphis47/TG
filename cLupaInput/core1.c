@@ -1,4 +1,4 @@
-#include "cMIPS.h"
+#include "../include/cMIPS.h"
 #include "cLupa.h"
 
 unsigned int *img;
@@ -96,5 +96,5 @@ int main(void) {
     // dumb core
 //  }
 
-  return;
+  return 0;
 }

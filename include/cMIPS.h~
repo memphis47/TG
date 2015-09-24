@@ -18,7 +18,18 @@
 #define IO_STATS_ADDR   (x_IO_BASE_ADDR + 8 * x_IO_ADDR_RANGE);
 #define IO_DSP7SEG_ADDR (x_IO_BASE_ADDR + 9 * x_IO_ADDR_RANGE);
 #define IO_KEYBD_ADDR   (x_IO_BASE_ADDR +10 * x_IO_ADDR_RANGE);
-#define IO_LCD_ADDR     (x_IO_BASE_ADDR +11 * x_IO_ADDR_RANGE);
+//#define IO_LCD_ADDR     (x_IO_BASE_ADDR +11 * x_IO_ADDR_RANGE);
+
+//-------------------------- BCD -----------------------------------------------
+// 11* pois existem IO_DSP7SEG_ADDR e IO_KEYBD_ADDR em packageMemory.vhd
+#define IO_BCDW_ADDR  (x_IO_BASE_ADDR + 11 * x_IO_ADDR_RANGE);
+#define IO_BCDR_ADDR  (x_IO_BASE_ADDR + 12 * x_IO_ADDR_RANGE);
+
+//-------------------------- DMA_USB -------------------------------------------
+#define IO_DMA_USB_ADDR (x_IO_BASE_ADDR + 13 * x_IO_ADDR_RANGE);
+
+//-------------------------- DMA_VGA -------------------------------------------
+#define IO_DMA_VGA_ADDR (x_IO_BASE_ADDR + 14 * x_IO_ADDR_RANGE);
 
 
 extern void exit(int);
@@ -56,6 +67,23 @@ extern void DSP7SEGput(int MSD, int MSdot, int lsd, int lsdot);
 extern int  KBDget(void);
 extern int  SWget(void);
 
+//-------------------------- BCD -----------------------------------------------
+extern void bcdWWr(int ); // Escrita de dados em buffer Write
+extern int  bcdWSt(void); // Leitura de estado do buffer Write
+
+extern int  bcdRRd(void); // Leitura de dados em buffer Read
+extern int  bcdRSt(void); // Leitura de estado do buffer Read
+
+//--------------------------VGA -----------------------------------------------
+
+extern int  dmaVGA_st(void);
+extern void dmaVGA_init(int, int, int);
+extern int  dmaVGA_closeFile(void);
+
+//--------------------------USB -----------------------------------------------
+
+extern void dmaUSB_init(int, int, int);
+extern int  dmaUSB_st(void);
 
 // struct to access the system statistics "peripheral"
 typedef struct sStats {

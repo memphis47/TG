@@ -8,8 +8,8 @@
 #define dataImgAddressI x_DATA_BASE_ADDR + HEAPSIZE
 
 // alterar para tamanho da imagem a ser tratada
-#define larguraImagem		     640
-#define alturaImagem 		     480
+#define larguraImagem		     160
+#define alturaImagem 		     120
 
 // alterar para número de frames a executar
 #define frameStream         3
