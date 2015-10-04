@@ -340,3 +340,16 @@ _excp_BFC0:
 	## main(), normal code starts below -- do not edit next line
 	.org x_ENTRY_POINT,0
 
+
+	##
+	##===============================================================
+	## reserve first two pages for the Page Table
+	##
+
+	.section .TP,"aw",@progbits
+_TP:	.skip (2*4096), 0
+_endTP:
+	
+
+
+

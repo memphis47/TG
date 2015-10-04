@@ -1,137 +1,137 @@
 v 3
-file / "/home/memphis/cMIPSLupa/vhdl/tb_cMIPS.vhd" "20150910111830.000" "20150910081836.808":
-  entity data_addr_decode at 22( 1036) + 0 on 26007;
-  architecture behavioral of data_addr_decode at 57( 2812) + 0 on 26008;
-  entity inst_addr_decode at 253( 9509) + 0 on 26009;
-  architecture behavioral of inst_addr_decode at 268( 10097) + 0 on 26010;
-  entity tb_cmips at 312( 11328) + 0 on 26011;
-  architecture tb of tb_cmips at 321( 11477) + 0 on 26012;
-  configuration cfg_tb at 1177( 44903) + 0 on 26013;
-file / "/home/memphis/cMIPSLupa/vhdl/core.vhd" "20150902110856.000" "20150910081835.158":
-  entity core at 22( 1024) + 0 on 25999;
-  architecture rtl of core at 54( 1887) + 0 on 26000;
-file / "/home/memphis/cMIPSLupa/vhdl/pipestages.vhd" "20150825113848.000" "20150910081834.966":
-  entity reg_if_rf at 27( 1198) + 0 on 25983;
-  architecture funcional of reg_if_rf at 39( 1465) + 0 on 25984;
-  entity reg_rf_ex at 61( 2020) + 0 on 25985;
-  architecture funcional of reg_rf_ex at 104( 3290) + 0 on 25986;
-  entity reg_ex_mm at 142( 4370) + 0 on 25987;
-  architecture funcional of reg_ex_mm at 183( 5586) + 0 on 25988;
-  entity reg_mm_wb at 221( 6714) + 0 on 25989;
-  architecture funcional of reg_mm_wb at 252( 7572) + 0 on 25990;
-file / "/home/memphis/cMIPSLupa/vhdl/units.vhd" "20150825113848.000" "20150910081834.540":
-  entity reg_bank at 73( 2343) + 0 on 25958;
-  architecture rtl of reg_bank at 89( 2808) + 0 on 25959;
-  architecture dual_port_ram of reg_bank at 133( 4272) + 0 on 25960;
-  entity alu at 180( 5838) + 0 on 25961;
-  architecture functional of alu at 198( 6239) + 0 on 25962;
-  entity mask_off_bits at 490( 16117) + 0 on 25963;
-  architecture table of mask_off_bits at 498( 16297) + 0 on 25964;
-  entity shift_left32 at 542( 17329) + 0 on 25965;
-  architecture functional of shift_left32 at 551( 17515) + 0 on 25966;
-  entity shift_right32 at 584( 18587) + 0 on 25967;
-  architecture functional of shift_right32 at 594( 18805) + 0 on 25968;
-  entity wait_states at 633( 20228) + 0 on 25969;
-  architecture structural of wait_states at 644( 20555) + 0 on 25970;
-file / "/home/memphis/cMIPSLupa/vhdl/cache.vhd" "20140929154242.000" "20150910081834.117":
-  entity d_cache at 23( 1157) + 0 on 25930;
-  architecture behavioral of d_cache at 66( 2911) + 0 on 25931;
-  entity fake_d_cache at 401( 15163) + 0 on 25932;
-  architecture behavioral of fake_d_cache at 428( 16271) + 0 on 25933;
-  entity i_cache at 459( 17093) + 0 on 25934;
-  architecture behavioral of i_cache at 493( 18343) + 0 on 25935;
-  entity fake_i_cache at 700( 24428) + 0 on 25936;
-  architecture behavioral of fake_i_cache at 720( 25117) + 0 on 25937;
-file / "/home/memphis/cMIPSLupa/vhdl/aux.vhd" "20150902153018.000" "20150910081833.793":
-  entity register32 at 23( 1054) + 0 on 25894;
-  architecture functional of register32 at 34( 1363) + 0 on 25895;
-  entity registern at 57( 1952) + 0 on 25896;
-  architecture functional of registern at 68( 2294) + 0 on 25897;
-  entity counter32 at 91( 2908) + 0 on 25898;
-  architecture functional of counter32 at 103( 3253) + 0 on 25899;
-  entity countnup at 129( 3931) + 0 on 25900;
-  architecture functional of countnup at 141( 4297) + 0 on 25901;
-  entity count4phases at 174( 5158) + 0 on 25902;
-  architecture functional of count4phases at 184( 5448) + 0 on 25903;
-  entity sr_latch at 210( 6064) + 0 on 25904;
-  architecture functional of sr_latch at 219( 6282) + 0 on 25905;
-  entity simple_latch at 236( 6735) + 0 on 25906;
-  architecture rtl of simple_latch at 244( 6887) + 0 on 25907;
-  entity sr_latch_rst at 261( 7380) + 0 on 25908;
-  architecture functional of sr_latch_rst at 268( 7529) + 0 on 25909;
-  entity ffd at 288( 8029) + 0 on 25910;
-  architecture functional of ffd at 296( 8189) + 0 on 25911;
-  entity fft at 319( 8748) + 0 on 25912;
-  architecture functional of fft at 327( 8903) + 0 on 25913;
-  entity subtr32 at 347( 9310) + 0 on 25914;
-  architecture functional of subtr32 at 357( 9580) + 0 on 25915;
-  entity addbit at 380( 10309) + 0 on 25916;
-  architecture structural of addbit at 387( 10487) + 0 on 25917;
-  entity carry4 at 398( 10904) + 0 on 25918;
-  architecture functional of carry4 at 406( 11151) + 0 on 25919;
-  entity carry16 at 431( 11988) + 0 on 25920;
-  architecture functional of carry16 at 439( 12247) + 0 on 25921;
-  entity addercarry16 at 483( 13793) + 0 on 25922;
-  architecture functional of addercarry16 at 492( 14016) + 0 on 25923;
-  entity adder32 at 558( 16297) + 0 on 25924;
-  architecture functional of adder32 at 567( 16503) + 0 on 25925;
-file / "/home/memphis/cMIPSLupa/vhdl/packageMemory.vhd" "20150831130857.000" "20150910081833.685":
-  package p_memory at 18( 859) + 0 on 25892;
-file / "/home/memphis/cMIPSLupa/vhdl/packageWires.vhd" "20150825113848.000" "20150910081833.604":
-  package p_wires at 18( 859) + 0 on 25890 body;
-  package body p_wires at 186( 9215) + 0 on 25891;
-file / "/home/memphis/cMIPSLupa/vhdl/packageExcp.vhd" "20150825113848.000" "20150910081833.762":
-  package p_exception at 18( 859) + 0 on 25893;
-file / "/home/memphis/cMIPSLupa/vhdl/memory.vhd" "20150825113848.000" "20150910081834.014":
-  entity simul_rom at 22( 1088) + 0 on 25926;
-  architecture behavioral of simul_rom at 41( 1662) + 0 on 25927;
-  entity simul_ram at 134( 4704) + 0 on 25928;
-  architecture behavioral of simul_ram at 158( 5506) + 0 on 25929;
-file / "/home/memphis/cMIPSLupa/vhdl/io.vhd" "20140929154252.000" "20150910081834.374":
-  entity print_data at 23( 1037) + 0 on 25938;
-  architecture behavioral of print_data at 39( 1411) + 0 on 25939;
-  entity to_stdout at 63( 2025) + 0 on 25940;
-  architecture behavioral of to_stdout at 79( 2419) + 0 on 25941;
-  entity write_data_file at 110( 3340) + 0 on 25942;
-  architecture behavioral of write_data_file at 129( 3850) + 0 on 25943;
-  entity read_data_file at 167( 4991) + 0 on 25944;
-  architecture behavioral of read_data_file at 185( 5463) + 0 on 25945;
-  entity do_interrupt at 245( 7360) + 0 on 25946;
-  architecture behavioral of do_interrupt at 264( 7994) + 0 on 25947;
-  entity simple_uart at 326( 9798) + 0 on 25948;
-  architecture behavioral of simple_uart at 345( 10502) + 0 on 25949;
-  entity sys_stats at 397( 12475) + 0 on 25950;
-  architecture behavioral of sys_stats at 418( 13057) + 0 on 25951;
-  entity to_7seg at 452( 13968) + 0 on 25952;
-  architecture behavioral of to_7seg at 470( 14456) + 0 on 25953;
-  entity read_keys at 510( 15607) + 0 on 25954;
-  architecture behavioral of read_keys at 524( 15985) + 0 on 25955;
-file / "/home/memphis/cMIPSLupa/vhdl/uart.vhd" "20140929154253.000" "20150910081834.794":
-  entity uart_int at 42( 1851) + 0 on 25971;
-  architecture estrutural of uart_int at 56( 2414) + 0 on 25972;
-  entity counter8 at 492( 15906) + 0 on 25973;
-  architecture functional of counter8 at 502( 16141) + 0 on 25974;
-  entity register8 at 526( 16789) + 0 on 25975;
-  architecture functional of register8 at 535( 16990) + 0 on 25976;
-  entity deslocador8 at 556( 17531) + 0 on 25977;
-  architecture functional of deslocador8 at 565( 17742) + 0 on 25978;
-  entity par_ser10 at 591( 18461) + 0 on 25979;
-  architecture functional of par_ser10 at 600( 18686) + 0 on 25980;
-  entity ser_par10 at 626( 19457) + 0 on 25981;
-  architecture functional of ser_par10 at 635( 19670) + 0 on 25982;
-file / "/home/memphis/cMIPSLupa/vhdl/exception.vhd" "20150825113848.000" "20150910081835.067":
-  entity reg_excp_if_rf at 27( 1213) + 0 on 25991;
-  architecture funcional of reg_excp_if_rf at 41( 1601) + 0 on 25992;
-  entity reg_excp_rf_ex at 60( 2142) + 0 on 25993;
-  architecture funcional of reg_excp_rf_ex at 86( 2984) + 0 on 25994;
-  entity reg_excp_ex_mm at 115( 3935) + 0 on 25995;
-  architecture funcional of reg_excp_ex_mm at 167( 5766) + 0 on 25996;
-  entity reg_excp_mm_wb at 213( 7456) + 0 on 25997;
-  architecture funcional of reg_excp_mm_wb at 229( 7915) + 0 on 25998;
-file / "/home/memphis/cMIPSLupa/vhdl/ram.vhd" "20140929154254.000" "20150910081836.664":
-  entity fpga_ram at 23( 1076) + 0 on 26001;
-  architecture rtl of fpga_ram at 46( 1888) + 0 on 26002;
-  entity single_port_ram at 272( 9727) + 0 on 26003;
-  architecture rtl of single_port_ram at 284( 10054) + 0 on 26004;
-  entity ram_dual at 320( 10929) + 0 on 26005;
-  architecture rtl of ram_dual at 335( 11358) + 0 on 26006;
+file / "/home/memphis/TG/vhdl/tb_cMIPS.vhd" "20151004133015.000" "20151004103052.958":
+  entity data_addr_decode at 22( 1036) + 0 on 26131;
+  architecture behavioral of data_addr_decode at 57( 2812) + 0 on 26132;
+  entity inst_addr_decode at 253( 9509) + 0 on 26133;
+  architecture behavioral of inst_addr_decode at 268( 10097) + 0 on 26134;
+  entity tb_cmips at 312( 11328) + 0 on 26135;
+  architecture tb of tb_cmips at 321( 11477) + 0 on 26136;
+  configuration cfg_tb at 1177( 44903) + 0 on 26137;
+file / "/home/memphis/TG/vhdl/core.vhd" "20151004133015.000" "20151004103050.958":
+  entity core at 22( 1024) + 0 on 26123;
+  architecture rtl of core at 54( 1887) + 0 on 26124;
+file / "/home/memphis/TG/vhdl/pipestages.vhd" "20151004133015.000" "20151004103050.704":
+  entity reg_if_rf at 27( 1198) + 0 on 26107;
+  architecture funcional of reg_if_rf at 39( 1465) + 0 on 26108;
+  entity reg_rf_ex at 61( 2020) + 0 on 26109;
+  architecture funcional of reg_rf_ex at 104( 3290) + 0 on 26110;
+  entity reg_ex_mm at 142( 4370) + 0 on 26111;
+  architecture funcional of reg_ex_mm at 183( 5586) + 0 on 26112;
+  entity reg_mm_wb at 221( 6714) + 0 on 26113;
+  architecture funcional of reg_mm_wb at 252( 7572) + 0 on 26114;
+file / "/home/memphis/TG/vhdl/units.vhd" "20151004133015.000" "20151004103050.155":
+  entity reg_bank at 73( 2343) + 0 on 26082;
+  architecture rtl of reg_bank at 89( 2808) + 0 on 26083;
+  architecture dual_port_ram of reg_bank at 133( 4272) + 0 on 26084;
+  entity alu at 180( 5838) + 0 on 26085;
+  architecture functional of alu at 198( 6239) + 0 on 26086;
+  entity mask_off_bits at 490( 16117) + 0 on 26087;
+  architecture table of mask_off_bits at 498( 16297) + 0 on 26088;
+  entity shift_left32 at 542( 17329) + 0 on 26089;
+  architecture functional of shift_left32 at 551( 17515) + 0 on 26090;
+  entity shift_right32 at 584( 18587) + 0 on 26091;
+  architecture functional of shift_right32 at 594( 18805) + 0 on 26092;
+  entity wait_states at 633( 20228) + 0 on 26093;
+  architecture structural of wait_states at 644( 20555) + 0 on 26094;
+file / "/home/memphis/TG/vhdl/cache.vhd" "20151004133015.000" "20151004103049.629":
+  entity d_cache at 23( 1157) + 0 on 26054;
+  architecture behavioral of d_cache at 66( 2911) + 0 on 26055;
+  entity fake_d_cache at 401( 15163) + 0 on 26056;
+  architecture behavioral of fake_d_cache at 428( 16271) + 0 on 26057;
+  entity i_cache at 459( 17093) + 0 on 26058;
+  architecture behavioral of i_cache at 493( 18343) + 0 on 26059;
+  entity fake_i_cache at 700( 24428) + 0 on 26060;
+  architecture behavioral of fake_i_cache at 720( 25117) + 0 on 26061;
+file / "/home/memphis/TG/vhdl/aux.vhd" "20151004133015.000" "20151004103049.217":
+  entity register32 at 23( 1054) + 0 on 26018;
+  architecture functional of register32 at 34( 1363) + 0 on 26019;
+  entity registern at 57( 1952) + 0 on 26020;
+  architecture functional of registern at 68( 2294) + 0 on 26021;
+  entity counter32 at 91( 2908) + 0 on 26022;
+  architecture functional of counter32 at 103( 3253) + 0 on 26023;
+  entity countnup at 129( 3931) + 0 on 26024;
+  architecture functional of countnup at 141( 4297) + 0 on 26025;
+  entity count4phases at 174( 5158) + 0 on 26026;
+  architecture functional of count4phases at 184( 5448) + 0 on 26027;
+  entity sr_latch at 210( 6064) + 0 on 26028;
+  architecture functional of sr_latch at 219( 6282) + 0 on 26029;
+  entity simple_latch at 236( 6735) + 0 on 26030;
+  architecture rtl of simple_latch at 244( 6887) + 0 on 26031;
+  entity sr_latch_rst at 261( 7380) + 0 on 26032;
+  architecture functional of sr_latch_rst at 268( 7529) + 0 on 26033;
+  entity ffd at 288( 8029) + 0 on 26034;
+  architecture functional of ffd at 296( 8189) + 0 on 26035;
+  entity fft at 319( 8748) + 0 on 26036;
+  architecture functional of fft at 327( 8903) + 0 on 26037;
+  entity subtr32 at 347( 9310) + 0 on 26038;
+  architecture functional of subtr32 at 357( 9580) + 0 on 26039;
+  entity addbit at 380( 10309) + 0 on 26040;
+  architecture structural of addbit at 387( 10487) + 0 on 26041;
+  entity carry4 at 398( 10904) + 0 on 26042;
+  architecture functional of carry4 at 406( 11151) + 0 on 26043;
+  entity carry16 at 431( 11988) + 0 on 26044;
+  architecture functional of carry16 at 439( 12247) + 0 on 26045;
+  entity addercarry16 at 483( 13793) + 0 on 26046;
+  architecture functional of addercarry16 at 492( 14016) + 0 on 26047;
+  entity adder32 at 558( 16297) + 0 on 26048;
+  architecture functional of adder32 at 567( 16503) + 0 on 26049;
+file / "/home/memphis/TG/vhdl/packageMemory.vhd" "20151004133015.000" "20151004103049.053":
+  package p_memory at 18( 859) + 0 on 26016;
+file / "/home/memphis/TG/vhdl/packageWires.vhd" "20151004133015.000" "20151004103048.559":
+  package p_wires at 18( 859) + 0 on 26014 body;
+  package body p_wires at 186( 9215) + 0 on 26015;
+file / "/home/memphis/TG/vhdl/packageExcp.vhd" "20151004133015.000" "20151004103049.171":
+  package p_exception at 18( 859) + 0 on 26017;
+file / "/home/memphis/TG/vhdl/memory.vhd" "20151004133015.000" "20151004103049.499":
+  entity simul_rom at 22( 1088) + 0 on 26050;
+  architecture behavioral of simul_rom at 41( 1662) + 0 on 26051;
+  entity simul_ram at 134( 4704) + 0 on 26052;
+  architecture behavioral of simul_ram at 158( 5506) + 0 on 26053;
+file / "/home/memphis/TG/vhdl/io.vhd" "20151004133015.000" "20151004103049.945":
+  entity print_data at 23( 1037) + 0 on 26062;
+  architecture behavioral of print_data at 39( 1411) + 0 on 26063;
+  entity to_stdout at 63( 2025) + 0 on 26064;
+  architecture behavioral of to_stdout at 79( 2419) + 0 on 26065;
+  entity write_data_file at 110( 3340) + 0 on 26066;
+  architecture behavioral of write_data_file at 129( 3850) + 0 on 26067;
+  entity read_data_file at 167( 4991) + 0 on 26068;
+  architecture behavioral of read_data_file at 185( 5463) + 0 on 26069;
+  entity do_interrupt at 245( 7360) + 0 on 26070;
+  architecture behavioral of do_interrupt at 264( 7994) + 0 on 26071;
+  entity simple_uart at 326( 9798) + 0 on 26072;
+  architecture behavioral of simple_uart at 345( 10502) + 0 on 26073;
+  entity sys_stats at 397( 12475) + 0 on 26074;
+  architecture behavioral of sys_stats at 418( 13057) + 0 on 26075;
+  entity to_7seg at 452( 13968) + 0 on 26076;
+  architecture behavioral of to_7seg at 470( 14456) + 0 on 26077;
+  entity read_keys at 510( 15607) + 0 on 26078;
+  architecture behavioral of read_keys at 524( 15985) + 0 on 26079;
+file / "/home/memphis/TG/vhdl/uart.vhd" "20151004133015.000" "20151004103050.475":
+  entity uart_int at 42( 1851) + 0 on 26095;
+  architecture estrutural of uart_int at 56( 2414) + 0 on 26096;
+  entity counter8 at 492( 15906) + 0 on 26097;
+  architecture functional of counter8 at 502( 16141) + 0 on 26098;
+  entity register8 at 526( 16789) + 0 on 26099;
+  architecture functional of register8 at 535( 16990) + 0 on 26100;
+  entity deslocador8 at 556( 17531) + 0 on 26101;
+  architecture functional of deslocador8 at 565( 17742) + 0 on 26102;
+  entity par_ser10 at 591( 18461) + 0 on 26103;
+  architecture functional of par_ser10 at 600( 18686) + 0 on 26104;
+  entity ser_par10 at 626( 19457) + 0 on 26105;
+  architecture functional of ser_par10 at 635( 19670) + 0 on 26106;
+file / "/home/memphis/TG/vhdl/exception.vhd" "20151004133015.000" "20151004103050.843":
+  entity reg_excp_if_rf at 27( 1213) + 0 on 26115;
+  architecture funcional of reg_excp_if_rf at 41( 1601) + 0 on 26116;
+  entity reg_excp_rf_ex at 60( 2142) + 0 on 26117;
+  architecture funcional of reg_excp_rf_ex at 86( 2984) + 0 on 26118;
+  entity reg_excp_ex_mm at 115( 3935) + 0 on 26119;
+  architecture funcional of reg_excp_ex_mm at 167( 5766) + 0 on 26120;
+  entity reg_excp_mm_wb at 213( 7456) + 0 on 26121;
+  architecture funcional of reg_excp_mm_wb at 229( 7915) + 0 on 26122;
+file / "/home/memphis/TG/vhdl/ram.vhd" "20151004133015.000" "20151004103052.763":
+  entity fpga_ram at 23( 1076) + 0 on 26125;
+  architecture rtl of fpga_ram at 46( 1888) + 0 on 26126;
+  entity single_port_ram at 272( 9727) + 0 on 26127;
+  architecture rtl of single_port_ram at 284( 10054) + 0 on 26128;
+  entity ram_dual at 320( 10929) + 0 on 26129;
+  architecture rtl of ram_dual at 335( 11358) + 0 on 26130;

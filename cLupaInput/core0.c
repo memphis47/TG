@@ -133,5 +133,5 @@ int main(void) {
     // dumb core
   }
 
-  return;
+  return 0;
 }

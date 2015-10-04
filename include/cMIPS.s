@@ -1,10 +1,10 @@
 
 	# see vhdl/packageMemory.vhd for addresses
         .set x_INST_BASE_ADDR,0x00000000
-        .set x_INST_MEM_SZ,0x00002000
+        .set x_INST_MEM_SZ,0x00004000
 
-        .set x_DATA_BASE_ADDR,0x01000000
-        .set x_DATA_MEM_SZ,0x00200000
+        .set x_DATA_BASE_ADDR,0x00040000
+        .set x_DATA_MEM_SZ,0x00004000
 	
         .set x_IO_BASE_ADDR,0x0F000000
         .set x_IO_MEM_SZ,0x00002000
@@ -18,10 +18,10 @@
 	.set HW_lcd_addr,    (x_IO_BASE_ADDR + 11 * x_IO_ADDR_RANGE)
 
 	# see vhdl/packageMemory.vhd for addresses
-	.set x_EXCEPTION_0000,0x00000080
+	.set x_EXCEPTION_0000,0x00000130
 	.set x_EXCEPTION_0100,0x00000200
-	.set x_EXCEPTION_0180,0x000000c0
-	.set x_EXCEPTION_0200,0x00000100
+	.set x_EXCEPTION_0180,0x00000280
+	.set x_EXCEPTION_0200,0x00000400
 	.set x_EXCEPTION_BFC0,0x000004E0
 	.set x_ENTRY_POINT,   0x00000500
 
