@@ -1,7 +1,7 @@
 #include "../include/cMIPS.h"
 #include "cLupa.h"
 
-static int const MAXINT = 200;
+static int const MAXINT = 10;
 
 int fibonacci(int i) {
 	if (i <= 1)

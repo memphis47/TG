@@ -20,8 +20,8 @@ srcVHDL=${tree}/vhdl
 
 simulator="${tree}"/tb_cmips
 
-#visual="${tree}"/v_cMIPS.vcd
-visual="${tree}"/v_cMIPS.ghw
+visual="${tree}"/v_cMIPS.vcd
+#visual="${tree}"/v_cMIPS.ghw
 unset WAVE
 
 length=1
@@ -80,8 +80,10 @@ sav="${tree}"/${gfile}.sav
 
 "${bin}"/build.sh && date &&\
 "${simulator}" --ieee-asserts=disable --stop-time=${length}${unit}s \
-               --wave=${visual}
-#               --vcd=${visual}
+               --vcd=${visual}
+
+#               --wave=${visual}
+
 date
 test -v $WAVE  ||  gtkwave -O /dev/null ${visual} ${sav}
 

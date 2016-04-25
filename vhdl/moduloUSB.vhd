@@ -464,7 +464,9 @@ begin
 			  when readFile =>
           if not endfile(input_file) then
               read( input_file, datum );
-              rdata <= std_logic_vector(to_signed(datum, 32));
+			  rdata <= std_logic_vector(to_signed(datum, 32));
+              --rdata <= std_logic_vector(to_signed(0, 32));
+			
               usb_rfx_n <= '0';
           end if; 
 			  when waitDMA =>

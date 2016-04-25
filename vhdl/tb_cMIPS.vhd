@@ -1075,21 +1075,28 @@ begin  -- TB
              io_bcdW_sel, cpu_data, wr, read_bcdW_out, io_bcdW_wait, -- Write
              io_bcdR_sel, d_addr_1, read_bcdR_out, io_bcdR_wait);    -- Read
 
+--ram_rdy <= '1';
+--io_dmaUSB_wait <= '1';
+------------------------
   -- USB_DMA
-  U_dmaUSB : dma_usb_module
+   U_dmaUSB : dma_usb_module
     port map( rst, clk, phi1, 
               io_dmaUSB_sel,    cpu_data,       dmaUSB_d_out,    d_addr,          wr,                    io_dmaUSB_wait,                                        
               dmausb_d_sel_ram, dmausb_rdy_ram, dmausb_wr_ram,   dmausb_addr_ram, dmausb_datram_in_ram,  dmausb_datram_out_ram, dmausb_xfer_ram,   -- RAM
               mem_d_sel,        ram_rdy,        mem_wr,          mem_addr,        datram_inp,            datram_out,            mem_xfer          -- DCACHE
     );
 
+
+--ram_rdy_1 <= '1';
+--io_dmaVGA_wait <= '1';
+------------------------------------------
   -- USB_DMA
   U_dmaVGA : dma_vga_module
     port map( rst, clk, phi0, phi1, phi2,
               io_dmaVGA_sel,    cpu_data_1,     dmaVGA_d_out,    d_addr_1,        wr_1,                  io_dmaVGA_wait,                                        
               dmavga_d_sel_ram, dmavga_rdy_ram, dmavga_wr_ram,   dmavga_addr_ram, dmavga_datram_in_ram,  dmavga_datram_out_ram, dmavga_xfer_ram, -- RAM
               mem_d_sel_1,      ram_rdy_1,      mem_wr_1,        mem_addr_1,      datram_inp_1,          datram_out_1,          mem_xfer_1       -- DCACHE
-    );
+   );
 
   -- cMIPS_0 (Xeam_Zoom)
   U_print_data: print_data
@@ -1133,15 +1140,15 @@ begin  -- TB
   --             cnt_d_ref,cnt_d_rd_hit,cnt_d_wr_hit,cnt_d_flush,
   --             cnt_i_ref,cnt_i_hit);
 
-  U_to_7seg: to_7seg
-    port map (rst,clk,io_7seg_sel,io_7seg_wait,wr,cpu_data,dsp0,dsp1);
+  -- U_to_7seg: to_7seg
+    --port map (rst,clk,io_7seg_sel,io_7seg_wait,wr,cpu_data,dsp0,dsp1);
 
   keys <= b"000000000000", b"000000000100" after 1 us, b"000000000000" after 2 us,  b"001000000000" after 3 us, b"000000000000" after 4 us, b"000001000000" after 5 us;
   switches <= b"0000";
           
-  U_read_keys: read_keys
-    port map (rst,clk,
-              io_keys_sel,io_keys_wait,keybd_d_out,keys,switches);
+  --U_read_keys: read_keys
+   -- port map (rst,clk,
+     --         io_keys_sel,io_keys_wait,keybd_d_out,keys,switches);
 
 
   
