@@ -1,7 +1,6 @@
 #include "../include/cMIPS.h"
 #include "cLupa.h"
 
-static int const MAXINT = 200;
 
 int primo(int i) {
 	int divisor = 2;
@@ -26,7 +25,9 @@ int main(void) {
 
 	unsigned int i, received;        // indexadores de linhas e colunas
 
-	for(i=0; i < MAXINT ; i++){
+	i = 0 ;
+
+	while(i < 12){
 		bcd_max = bcdRSt();         
         while(bcd_max <= 0){  // pooling?
           bcd_max = bcdRSt();
@@ -34,7 +35,9 @@ int main(void) {
 
         // leitura do buffer
         received = bcdRRd();
-		primo(received);
+        print(received);
+		print(primo(received));
+		i++;
 	}
 
 	return 0;

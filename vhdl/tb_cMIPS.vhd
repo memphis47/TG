@@ -1075,28 +1075,28 @@ begin  -- TB
              io_bcdW_sel, cpu_data, wr, read_bcdW_out, io_bcdW_wait, -- Write
              io_bcdR_sel, d_addr_1, read_bcdR_out, io_bcdR_wait);    -- Read
 
---ram_rdy <= '1';
---io_dmaUSB_wait <= '1';
+ram_rdy <= '1';
+io_dmaUSB_wait <= '1';
 ------------------------
   -- USB_DMA
-   U_dmaUSB : dma_usb_module
-    port map( rst, clk, phi1, 
-              io_dmaUSB_sel,    cpu_data,       dmaUSB_d_out,    d_addr,          wr,                    io_dmaUSB_wait,                                        
-              dmausb_d_sel_ram, dmausb_rdy_ram, dmausb_wr_ram,   dmausb_addr_ram, dmausb_datram_in_ram,  dmausb_datram_out_ram, dmausb_xfer_ram,   -- RAM
-              mem_d_sel,        ram_rdy,        mem_wr,          mem_addr,        datram_inp,            datram_out,            mem_xfer          -- DCACHE
-    );
+   --U_dmaUSB : dma_usb_module
+   -- port map( rst, clk, phi1, 
+   --           io_dmaUSB_sel,    cpu_data,       dmaUSB_d_out,    d_addr,          wr,                    io_dmaUSB_wait,                                        
+   --           dmausb_d_sel_ram, dmausb_rdy_ram, dmausb_wr_ram,   dmausb_addr_ram, dmausb_datram_in_ram,  dmausb_datram_out_ram, dmausb_xfer_ram,   -- RAM
+   --           mem_d_sel,        ram_rdy,        mem_wr,          mem_addr,        datram_inp,            datram_out,            mem_xfer          -- DCACHE
+   -- );
 
 
---ram_rdy_1 <= '1';
---io_dmaVGA_wait <= '1';
+ram_rdy_1 <= '1';
+io_dmaVGA_wait <= '1';
 ------------------------------------------
   -- USB_DMA
-  U_dmaVGA : dma_vga_module
-    port map( rst, clk, phi0, phi1, phi2,
-              io_dmaVGA_sel,    cpu_data_1,     dmaVGA_d_out,    d_addr_1,        wr_1,                  io_dmaVGA_wait,                                        
-              dmavga_d_sel_ram, dmavga_rdy_ram, dmavga_wr_ram,   dmavga_addr_ram, dmavga_datram_in_ram,  dmavga_datram_out_ram, dmavga_xfer_ram, -- RAM
-              mem_d_sel_1,      ram_rdy_1,      mem_wr_1,        mem_addr_1,      datram_inp_1,          datram_out_1,          mem_xfer_1       -- DCACHE
-   );
+  --U_dmaVGA : dma_vga_module
+  --  port map( rst, clk, phi0, phi1, phi2,
+  --            io_dmaVGA_sel,    cpu_data_1,     dmaVGA_d_out,    d_addr_1,        wr_1,                  io_dmaVGA_wait,                                        
+  --            dmavga_d_sel_ram, dmavga_rdy_ram, dmavga_wr_ram,   dmavga_addr_ram, dmavga_datram_in_ram,  dmavga_datram_out_ram, dmavga_xfer_ram, -- RAM
+  --            mem_d_sel_1,      ram_rdy_1,      mem_wr_1,        mem_addr_1,      datram_inp_1,          datram_out_1,          mem_xfer_1       -- DCACHE
+  -- );
 
   -- cMIPS_0 (Xeam_Zoom)
   U_print_data: print_data

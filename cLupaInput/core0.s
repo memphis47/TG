@@ -12,40 +12,30 @@
 	.ent	fibonacci
 	.type	fibonacci, @function
 fibonacci:
-	.frame	$sp,32,$31		# vars= 0, regs= 3/0, args= 16, gp= 0
-	.mask	0x80030000,-4
+	.frame	$sp,0,$31		# vars= 0, regs= 0/0, args= 0, gp= 0
+	.mask	0x00000000,0
 	.fmask	0x00000000,0
 	.set	noreorder
 	.set	nomacro
-	slt	$2,$4,2
-	bne	$2,$0,$L3
+	beq	$4,$0,$L4
+	li	$5,1			# 0x1
+
+	move	$3,$0
+	li	$6,1			# 0x1
+$L3:
+	addu	$2,$6,$3
+	addiu	$5,$5,1
+	move	$6,$3
+	sltu	$7,$4,$5
+	beq	$7,$0,$L3
+	move	$3,$2
+
+	j	$31
 	nop
 
-	addiu	$sp,$sp,-32
-	sw	$31,28($sp)
-	sw	$17,24($sp)
-	sw	$16,20($sp)
-	move	$16,$4
-	jal	fibonacci
-	addiu	$4,$4,-1
-
-	move	$17,$2
-	jal	fibonacci
-	addiu	$4,$16,-2
-
-	b	$L2
-	addu	$2,$17,$2
-
-$L3:
+$L4:
 	j	$31
-	move	$2,$4
-
-$L2:
-	lw	$31,28($sp)
-	lw	$17,24($sp)
-	lw	$16,20($sp)
-	j	$31
-	addiu	$sp,$sp,32
+	move	$2,$0
 
 	.set	macro
 	.set	reorder
@@ -68,7 +58,6 @@ main:
 	sw	$17,24($sp)
 	sw	$16,20($sp)
 	move	$16,$0
-	li	$17,200			# 0xc8
 $L9:
 	jal	bcdWSt
 	nop
@@ -77,6 +66,9 @@ $L9:
 	nop
 
 $L10:
+	jal	print
+	li	$4,112			# 0x70
+
 	jal	bcdWSt
 	nop
 
@@ -87,18 +79,15 @@ $L7:
 	jal	fibonacci
 	move	$4,$16
 
-	jal	bcdWWr
+	move	$17,$2
+	jal	print
 	move	$4,$2
 
-	addiu	$16,$16,1
-	bne	$16,$17,$L9
-	move	$2,$0
+	jal	bcdWWr
+	move	$4,$17
 
-	lw	$31,28($sp)
-	lw	$17,24($sp)
-	lw	$16,20($sp)
-	j	$31
-	addiu	$sp,$sp,32
+	b	$L9
+	addiu	$16,$16,1
 
 	.set	macro
 	.set	reorder

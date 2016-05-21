@@ -43,7 +43,7 @@ package p_MEMORY is
   constant x_INST_BASE_ADDR : reg32   := x"00000000";
   constant x_INST_MEM_SZ    : reg32   := x"00004000";
   constant x_DATA_BASE_ADDR : reg32   := x"00040000";
-  constant x_DATA_MEM_SZ    : reg32   := x"00004000";
+  constant x_DATA_MEM_SZ    : reg32   := x"00044000";
   constant x_IO_BASE_ADDR   : reg32   := x"0F000000";
   constant x_IO_MEM_SZ      : reg32   := x"00002000";
   constant x_IO_ADDR_RANGE  : reg32   := x"00000020";

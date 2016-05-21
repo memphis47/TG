@@ -4,7 +4,7 @@
         .set x_INST_MEM_SZ,0x00004000
 
         .set x_DATA_BASE_ADDR,0x00040000
-        .set x_DATA_MEM_SZ,0x00004000
+        .set x_DATA_MEM_SZ,0x00044000
 	
         .set x_IO_BASE_ADDR,0x0F000000
         .set x_IO_MEM_SZ,0x00002000

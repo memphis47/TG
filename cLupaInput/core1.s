@@ -76,7 +76,6 @@ main:
 	addiu	$sp,$sp,-24
 	sw	$31,20($sp)
 	sw	$16,16($sp)
-	li	$16,200			# 0xc8
 $L11:
 	jal	bcdRSt
 	nop
@@ -93,18 +92,20 @@ $L12:
 
 $L9:
 	jal	bcdRRd
-	addiu	$16,$16,-1
+	nop
 
-	jal	primo
+	move	$16,$2
+	jal	print
 	move	$4,$2
 
-	bne	$16,$0,$L11
-	move	$2,$0
+	jal	primo
+	move	$4,$16
 
-	lw	$31,20($sp)
-	lw	$16,16($sp)
-	j	$31
-	addiu	$sp,$sp,24
+	jal	print
+	move	$4,$2
+
+	b	$L11
+	nop
 
 	.set	macro
 	.set	reorder

@@ -1,13 +1,25 @@
 #include "../include/cMIPS.h"
 #include "cLupa.h"
 
-static int const MAXINT = 200;
+static int const MAXINT = 12;
 
-int fibonacci(int i) {
-	if (i <= 1)
-		return i;
-	else
-		return fibonacci(i-1) + fibonacci(i-2);
+
+/*
+http://www.programandoemc.com/2012/05/fibonacci-iterativo.html
+*/
+int fibonacci(int n) {
+	unsigned int i, j, k, t;
+
+	i = 1;
+	j = 0;
+
+	for (k = 1; k <= n; k++)
+	{
+		t = i + j;
+		i = j;
+		j = t;
+	}
+	return j;
 }
 
 int main(void) {
@@ -17,12 +29,19 @@ int main(void) {
 
 	unsigned int i, j;        // indexadores de linhas e colunas
 
-	for(i=0; i < MAXINT ; i++){
+	int k;
+
+	k=0;
+
+	while(k < MAXINT){
 		bcd_max = bcdWSt();
 		while(bcd_max == 0){  // pooling
 			bcd_max = bcdWSt();
 		}
-		bcdWWr(fibonacci(i));
+		j = fibonacci(k);
+		print(j);
+		bcdWWr(j);
+		k++;
 	}
 
 	return 0;
