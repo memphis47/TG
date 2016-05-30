@@ -1,7 +1,7 @@
 #include "../include/cMIPS.h"
 #include "cLupa.h"
 
-static int const MAXINT = 12;
+static int const MAXINT = 312;
 
 
 /*
@@ -35,11 +35,19 @@ int main(void) {
 
 	while(k < MAXINT){
 		bcd_max = bcdWSt();
+		print(bcd_max);
 		while(bcd_max == 0){  // pooling
+			print(bcd_max);
 			bcd_max = bcdWSt();
 		}
+		/*print('-');
+		print('-');
+		print('-');
+		print(bcd_max);
+		print('-');
+		print('-');
+		print('-');*/
 		j = fibonacci(k);
-		print(j);
 		bcdWWr(j);
 		k++;
 	}

@@ -27,16 +27,16 @@ int main(void) {
 
 	i = 0 ;
 
-	while(i < 12){
-		bcd_max = bcdRSt();         
+	while(i < 312){
+		bcd_max = bcdRSt();
         while(bcd_max <= 0){  // pooling?
+		  print(bcd_max);
           bcd_max = bcdRSt();
         }  
 
         // leitura do buffer
         received = bcdRRd();
-        print(received);
-		print(primo(received));
+		primo(received);
 		i++;
 	}
 
