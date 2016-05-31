@@ -1,28 +1,34 @@
-cp ./Teste/Teste1/*.c ./cLupaInput/ &&
-cd cLupaInput &&
-rm -r prog1.bin prog.bin data.bin data1.bin 2>&1 && 
-rm -r ../prog1.bin ../prog.bin ../data.bin ../data1.bin 2>&1 && 
-../bin/compile.sh core1.c && 
-cp data.bin data1.bin && cp prog.bin prog1.bin && 
-../bin/compile.sh core0.c && 
-cp *.bin ../ &&
-cd .. &&
-
-n=2
-
-# continue until $n equals 256
-while [ $n -le 256 ]
+testeFolder=1
+while [ $testeFolder -le $1 ]
 do
-	filename100="./result/result_t100_b$n" 
-	filename200="./result/result_t200_b$n"
-	filename300="./result/result_t300_b$n"
-	cp ./Teste/testes/$n/*.vhd ./vhdl/ &&
-	./bin/run.sh -v pipe.sav -u u -t 100 -n 1>output 2>"$filename100" &&
-	./bin/run.sh -v pipe.sav -u u -t 200 -n 1>output 2>"$filename200" &&
-	./bin/run.sh -v pipe.sav -u u -t 300 -n 1>output 2>"$filename300" &&	
-	n=$(( n*2 ))	 # increments $n
-done
+	cp ./Teste/Teste$testeFolder/*.c ./cLupaInput/ &&
+	cd cLupaInput &&
+	rm -r prog1.bin prog.bin data.bin data1.bin 2>&1 && 
+	rm -r ../prog1.bin ../prog.bin ../data.bin ../data1.bin 2>&1 && 
+	../bin/compile.sh core1.c && 
+	cp data.bin data1.bin && cp prog.bin prog1.bin && 
+	../bin/compile.sh core0.c && 
+	cp *.bin ../ &&
+	cd .. &&
 
+	n=2
+
+	# continue until $n equals 256
+	mkdir -p "./result/teste$testeFolder/" &&
+	while [ $n -le $2 ]
+	do
+		filename100="./result/teste$testeFolder/result_t100_b$n" 
+		filename200="./result/teste$testeFolder/result_t200_b$n"
+		filename300="./result/teste$testeFolder/result_t300_b$n"
+		cp ./Teste/testes/$n/*.vhd ./vhdl/ &&
+		./bin/run.sh -v pipe.sav -u u -t 100 -n 1>output 2>"$filename100" &&
+		./bin/run.sh -v pipe.sav -u u -t 200 -n 1>output 2>"$filename200" &&
+		./bin/run.sh -v pipe.sav -u u -t 300 -n 1>output 2>"$filename300" &&	
+		n=$(( n*2 ))	 # increments $n
+	done
+
+	testeFolder=$(( testeFolder+1 ))
+done
 
 #cp ./Teste/testes/2/*.vhd ./vhdl/ &&
 #./bin/run.sh -v pipe.sav -u u -t 100 -n 1>output 2>./result/resultb2t100 &&
