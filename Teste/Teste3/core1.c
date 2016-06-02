@@ -4,20 +4,19 @@
 static int const MAXINT = 312;
 
 
-int primo(int i) {
-	int divisor = 2;
-    int ehPrimo = 1;		/* Verificador de primo */
+int fibonacci(int n) {
+	unsigned int i, j, k, t;
 
-    if (i <= 2)
-	  ehPrimo = 0;
+	i = 1;
+	j = 0;
 
-    while (ehPrimo == 1 && divisor <= i / 2) {
-		if (i % divisor == 0)
-			ehPrimo = 0;
-		divisor++;
-    }
-	
-	return ehPrimo;
+	for (k = 1; k <= n; k++)
+	{
+		t = i + j;
+		i = j;
+		j = t;
+	}
+	return j;
 }
 
 int main(void) {
@@ -39,7 +38,7 @@ int main(void) {
           bcd_max = bcdRSt();
         }
         received = bcdRRd();
-		primo(received);
+		int fib = fibonacci(received);
 		k++;
 	}
 
