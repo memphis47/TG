@@ -3,7 +3,7 @@
 
 static int const MAXINT = 312;
 
-
+//TESTE3 CORE1
 int fibonacci(int n) {
 	unsigned int i, j, k, t;
 

@@ -3,10 +3,7 @@
 
 static int const MAXINT = 312;
 
-
-/*
-http://www.programandoemc.com/2012/05/fibonacci-iterativo.html
-*/
+//TESTE2 CORE1
 int fibonacci(int n) {
 	unsigned int i, j, k, t;
 
@@ -37,8 +34,10 @@ int main(void) {
 		bcd_max = bcdRSt();
 		print(bcd_max);
         while(bcd_max == 0){  // pooling?
-		  print(bcd_max);
-          bcd_max = bcdRSt();
+        	print(15);
+			print(bcd_max);
+			print(15);
+        	bcd_max = bcdRSt();
         }
         received = bcdRRd();
 		int fib = fibonacci(received);

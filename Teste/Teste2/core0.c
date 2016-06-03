@@ -3,27 +3,22 @@
 
 static int const MAXINT = 312;
 
-
-int primo(int i) {
-	int divisor = 2;
-    int ehPrimo = 1;		/* Verificador de primo */
-
-    if (i <= 2)
-	  ehPrimo = 0;
-
-    while (ehPrimo == 1 && divisor <= i / 2) {
-		if (i % divisor == 0)
-			ehPrimo = 0;
-		divisor++;
-    }
-	
-	return ehPrimo;
-}
-
 int findPrimo(int i){
 	int k=0;
 	while(k < i){
-		if(primo(k))
+		print(k);
+		int divisor = 2;
+		int ehPrimo = 1;		/* Verificador de primo */
+
+		if (k <= 2)
+		  ehPrimo = 0;
+
+		while (ehPrimo == 1 && divisor <= k / 2) {
+			if (k % divisor == 0)
+				ehPrimo = 0;
+			divisor++;
+		}
+		if(ehPrimo==1)
 			return k;
 		k++;
 	}
@@ -45,7 +40,9 @@ int main(void) {
 		bcd_max = bcdWSt();
 		print(bcd_max);
 		while(bcd_max == 0){  // pooling
+			print(12);
 			print(bcd_max);
+			print(12);
 			bcd_max = bcdWSt();
 		}
 		/*print('-');
@@ -56,6 +53,9 @@ int main(void) {
 		print('-');
 		print('-');*/
 		j = findPrimo(k);
+		print(10);
+		print(j);
+		print(10);
 		bcdWWr(j);
 		k++;
 	}

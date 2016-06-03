@@ -198,7 +198,7 @@ excp_tbl: # see Table 8-25, pg 95,96
 	j h_syscall # 8
 	nop
 
-	j h_breakpoint # 9
+	wait 0x09
 	nop
 
 	j h_RI    # 10 reserved instruction

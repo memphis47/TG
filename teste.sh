@@ -1,5 +1,5 @@
-testeFolder=1
-while [ $testeFolder -le $1 ]
+testeFolder=$1
+while [ $testeFolder -le $2 ]
 do
 	cp ./Teste/Teste$testeFolder/*.c ./cLupaInput/ &&
 	cd cLupaInput &&
@@ -11,19 +11,24 @@ do
 	cp *.bin ../ &&
 	cd .. &&
 
-	n=2
+	n=$3
 
 	# continue until $n equals 256
 	mkdir -p "./result/teste$testeFolder/" &&
-	while [ $n -le $2 ]
+	while [ $n -le $4 ]
 	do
 		filename100="./result/teste$testeFolder/result_t100_b$n" 
 		filename200="./result/teste$testeFolder/result_t200_b$n"
 		filename300="./result/teste$testeFolder/result_t300_b$n"
+
+		output100="./result/teste$testeFolder/output_t100_b$n"
+		output200="./result/teste$testeFolder/output_t200_b$n"
+		output300="./result/teste$testeFolder/output_t300_b$n"
+		
 		cp ./Teste/testes/$n/*.vhd ./vhdl/ &&
-		./bin/run.sh -v pipe.sav -u u -t 100 -n 1>output 2>"$filename100" &&
-		./bin/run.sh -v pipe.sav -u u -t 200 -n 1>output 2>"$filename200" &&
-		./bin/run.sh -v pipe.sav -u u -t 300 -n 1>output 2>"$filename300" &&	
+		./bin/run.sh -v pipe.sav -u u -t 100 -n 1>"$output100" 2>"$filename100" &&
+		./bin/run.sh -v pipe.sav -u u -t 200 -n 1>"$output200" 2>"$filename200" &&
+		./bin/run.sh -v pipe.sav -u u -t 300 -n 1>"$output300" 2>"$filename300" &&	
 		n=$(( n*2 ))	 # increments $n
 	done
 
