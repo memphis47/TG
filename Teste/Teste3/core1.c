@@ -21,22 +21,20 @@ int fibonacci(int n) {
 
 int main(void) {
 
-	unsigned int bcd_max = 0; // Castatic int const MAXINT = 312;pacidade inicial BCD
-
-
-	unsigned int i, received;        // indexadores de linhas e colunas
-
-	int k;
+	int received,k;
 
 	k = 0 ;
 
 	while(k < MAXINT){
-		bcd_max = bcdRSt();
-		print(bcd_max);
-        while(bcd_max == 0){  // pooling?
-		  print(bcd_max);
-          bcd_max = bcdRSt();
-        }
+		int bcd_max_aux;
+		do{
+        	bcd_max_aux =(int) bcdRSt();
+        	//print(12);
+			//print(bcd_max_aux);
+			//print(13);
+		}while(bcd_max_aux == 0);
+
+		print(15);
         received = bcdRRd();
 		int fib = fibonacci(received);
 		k++;

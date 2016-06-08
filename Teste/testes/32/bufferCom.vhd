@@ -5,6 +5,7 @@ library IEEE;
 use IEEE.std_logic_1164.all;
 use IEEE.numeric_std.all;
 use ieee.math_real.all;
+use work.p_WIRES.all;
 library std;
 
 
@@ -13,7 +14,7 @@ package p_cb is
 --  constant t_clock_period : time := 50 ns; -- trocado por CLOCK_PER de p_WIRES
 
   constant NUM_WORDS_CB   : integer := 32;  -- Height of CircularBuffer
-  constant NUM_LINES_ADDR : integer := integer(floor(log2(real(NUM_WORDS_CB))));
+  constant NUM_LINES_ADDR : natural := log2_ceil(NUM_WORDS_CB);
   constant SIZE_WORDS_CB  : integer := 32; -- Width of each word in CircularBuffer
  
   subtype regLine  is std_logic_vector((NUM_LINES_ADDR - 1) downto 0);
