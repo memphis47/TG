@@ -3,7 +3,21 @@
 
 static int const MAXINT = 312;
 
+//TESTE3 CORE1
+int fibonacci(int n) {
+	unsigned int i, j, k, t;
 
+	i = 1;
+	j = 0;
+
+	for (k = 1; k <= n; k++)
+	{
+		t = i + j;
+		i = j;
+		j = t;
+	}
+	return j;
+}
 
 int main(void) {
 
@@ -22,17 +36,8 @@ int main(void) {
 
 		print(15);
         received = bcdRRd();
-		int divisor = 2;
-		int ehPrimo = 1;		/* Verificador de primo */
-
-		if (received <= 2)
-		ehPrimo = 0;
-
-		while (ehPrimo == 1 && divisor <= received/ 2) {
-			if (received % divisor == 0)
-				ehPrimo = 0;
-			divisor++;
-		}
+        print(received);
+		int fib = fibonacci(k);
 		k++;
 	}
 

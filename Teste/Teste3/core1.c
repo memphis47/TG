@@ -36,7 +36,8 @@ int main(void) {
 
 		print(15);
         received = bcdRRd();
-		int fib = fibonacci(received);
+        print(received);
+		int fib = fibonacci(k);
 		k++;
 	}
 

@@ -4,66 +4,38 @@
 static int const MAXINT = 312;
 
 
-int primo(int i) {
-	int divisor = 2;
-    int ehPrimo = 1;		/* Verificador de primo */
+/*
+http://www.programandoemc.com/2012/05/fibonacci-iterativo.html
+*/
 
-    if (i <= 2)
-	  ehPrimo = 0;
-
-    while (ehPrimo == 1 && divisor <= i / 2) {
-		if (i % divisor == 0)
-			ehPrimo = 0;
-		divisor++;
-    }
-	
-	return ehPrimo;
-}
-
-int findPrimo(int i){
-	int k=0;
-	while(k < i){
-		if(primo(k) == 1)
-			return k;
-		k++;
-	}
-	return k;
-}
 
 int main(void) {
 
-	int j,k;
-	k = 0;
-	volatile unsigned int bcd_max_aux;
-	j = 0;
+	unsigned int bcd_max_aux; // Capacidade inicial BCD
+
+
+    int j,k;
+
+	k=0;
+
 	while(k < MAXINT){
-	    
 		do{
 			bcd_max_aux = bcdWSt();
 		}while(bcd_max_aux<=0);
+		
 
-		int i = k;
-		while(i < MAXINT){
-			print(i);
-			int divisor = 2;
-			int ehPrimo = 1;		/* Verificador de primo */
+		unsigned int i, l , t;
 
-			if (i <= 2)
-			  ehPrimo = 0;
+		i = 1;
+		j = 0;
 
-			while (ehPrimo == 1 && divisor <= i / 2) {
-				if (i % divisor == 0)
-					ehPrimo = 0;
-				divisor++;
-			}
-			if(ehPrimo==1 && i!=j && i>j){
-				j = i ;
-				break;
-			}
-			i++;
+		for (l = 1; l <= k; l++)
+		{
+			t = i + j;
+			i = j;
+			j = t;
 		}
 
-		print(j);
 		bcdWWr(j);
 		k++;
 	}
