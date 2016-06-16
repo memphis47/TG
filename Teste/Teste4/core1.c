@@ -1,7 +1,7 @@
 #include "../include/cMIPS.h"
 #include "cLupa.h"
 
-static int const MAXINT = 312;
+static int const MAXINT = 48;
 
 
 
