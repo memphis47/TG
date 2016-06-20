@@ -43,7 +43,7 @@ int main(void) {
 		}while(bcd_max_aux<=0);
 
 		int i = k;
-		while(i < MAXINT){
+		while(i < 1836311903){
 			print(i);
 			int divisor = 2;
 			int ehPrimo = 1;		/* Verificador de primo */

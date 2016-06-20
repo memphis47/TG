@@ -48,6 +48,7 @@ begin
     variable msg : line;
   begin
     if falling_edge(clk) and sel = '0' then
+      --assert false report "Print["&SLV32HEX(data)&"]";
       write ( msg, string'(SLV32HEX(data)) );
       writeline( output, msg );
     end if;
@@ -91,6 +92,7 @@ begin
       if (data(7 downto 0) = x"00") or (data(7 downto 0) = x"0a") then
         writeline( output, msg );
       else
+      
         write(msg, character'val(to_integer( unsigned(data(7 downto 0)))));
       end if;
     end if;

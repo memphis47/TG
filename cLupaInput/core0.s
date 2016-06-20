@@ -120,20 +120,23 @@ $L14:
 	.ent	main
 	.type	main, @function
 main:
-	.frame	$sp,48,$31		# vars= 8, regs= 5/0, args= 16, gp= 0
-	.mask	0x800f0000,-4
+	.frame	$sp,48,$31		# vars= 8, regs= 6/0, args= 16, gp= 0
+	.mask	0x801f0000,-4
 	.fmask	0x00000000,0
 	.set	noreorder
 	.set	nomacro
 	addiu	$sp,$sp,-48
 	sw	$31,44($sp)
-	sw	$19,40($sp)
-	sw	$18,36($sp)
-	sw	$17,32($sp)
-	sw	$16,28($sp)
+	sw	$20,40($sp)
+	sw	$19,36($sp)
+	sw	$18,32($sp)
+	sw	$17,28($sp)
+	sw	$16,24($sp)
 	move	$19,$0
 	move	$18,$0
-	li	$17,48			# 0x30
+	li	$17,1836253184			# 0x6d730000
+	ori	$17,$17,0xe55f
+	li	$20,48			# 0x30
 $L16:
 	jal	bcdWSt
 	nop
@@ -142,7 +145,7 @@ $L16:
 	lw	$2,16($sp)
 	nop
 	beq	$2,$0,$L16
-	slt	$2,$19,48
+	slt	$2,$19,$17
 
 	beq	$2,$0,$L17
 	move	$16,$19
@@ -197,14 +200,15 @@ $L17:
 	move	$4,$18
 
 	addiu	$19,$19,1
-	bne	$19,$17,$L16
+	bne	$19,$20,$L16
 	move	$2,$0
 
 	lw	$31,44($sp)
-	lw	$19,40($sp)
-	lw	$18,36($sp)
-	lw	$17,32($sp)
-	lw	$16,28($sp)
+	lw	$20,40($sp)
+	lw	$19,36($sp)
+	lw	$18,32($sp)
+	lw	$17,28($sp)
+	lw	$16,24($sp)
 	j	$31
 	addiu	$sp,$sp,48
 
