@@ -42,6 +42,8 @@ extern void writeClose(void);
 extern int  readInt(int*);
 extern void dumpRAM(void);
 
+int clkcount(void);
+
 extern void cmips_delay(int);
 
 extern void startCounter(int, int);

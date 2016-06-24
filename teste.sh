@@ -42,9 +42,9 @@ do
 			
 
 			cp ./Teste/testes/$n/*.vhd ./vhdl/ &&
-			#./bin/run.sh -v pipe.sav -u u -t 100 -n 1>"$output100" 2>"$filename100" &&
-			#./bin/run.sh -v pipe.sav -u u -t 200 -n 1>"$output200" 2>"$filename200" &&
-			#./bin/run.sh -v pipe.sav -u u -t 300 -n 1>"$output300" 2>"$filename300" &&	
+			./bin/run.sh -v pipe.sav -u u -t 100 -n 1>"$output100" 2>"$filename100" &&
+			./bin/run.sh -v pipe.sav -u u -t 200 -n 1>"$output200" 2>"$filename200" &&
+			./bin/run.sh -v pipe.sav -u u -t 300 -n 1>"$output300" 2>"$filename300" &&	
 			./bin/run.sh -v pipe.sav -u u -t 500 -n 1>"$output500" 2>"$filename500" &&	
 			./bin/run.sh -v pipe.sav -u u -t 2000 -n 1>"$output2000" 2>"$filename2000" &&	
 			n=$(( n*2 ))	 # increments $n

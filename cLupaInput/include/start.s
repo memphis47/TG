@@ -82,6 +82,11 @@ _start:
         li   $k0, 0x1000e011
         mtc0 $k0, cop0_STATUS
 
+	.set cop0_CAUSE,$13
+	# set CAUSE: DC=0 (enable counter), IV=1 IRQs separated from exceptions
+        li   $k0, 0x00800000
+        mtc0 $k0, cop0_CAUSE
+
 	jal  main # on returning from main(), MUST go into exit()
 	nop       #   to stop the simulation.
 exit:	

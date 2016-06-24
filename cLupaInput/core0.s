@@ -137,6 +137,11 @@ main:
 	li	$17,1836253184			# 0x6d730000
 	ori	$17,$17,0xe55f
 	li	$20,48			# 0x30
+$L22:
+	jal	clkcount
+	nop
+
+	move	$16,$2
 $L16:
 	jal	bcdWSt
 	nop
@@ -145,8 +150,15 @@ $L16:
 	lw	$2,16($sp)
 	nop
 	beq	$2,$0,$L16
-	slt	$2,$19,$17
+	nop
 
+	jal	clkcount
+	nop
+
+	jal	print
+	subu	$4,$2,$16
+
+	slt	$2,$19,$17
 	beq	$2,$0,$L17
 	move	$16,$19
 
@@ -200,7 +212,7 @@ $L17:
 	move	$4,$18
 
 	addiu	$19,$19,1
-	bne	$19,$20,$L16
+	bne	$19,$20,$L22
 	move	$2,$0
 
 	lw	$31,44($sp)

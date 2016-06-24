@@ -203,3 +203,19 @@ cmips_delay:
         nop
 	.end    cmips_delay
 	#----------------------------------------------------------------
+
+
+#================================================================
+	# clkcount returns the value of the COUNT register
+	#----------------------------------------------------------------
+	.text
+        .set    c0_count,$9
+	.set    noreorder
+	.global clkcount
+	.ent    clkcount
+	clkcount:
+        mfc0 $v0, c0_count
+        jr   $ra
+        nop
+	.end    clkcount
+	#----------------------------------------------------------------

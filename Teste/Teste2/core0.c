@@ -36,10 +36,13 @@ int main(void) {
 	volatile unsigned int bcd_max_aux;
 	j = 0;
 	while(k < MAXINT){
-	    
+	    int old = clkcount();
+   
 		do{
 			bcd_max_aux = bcdWSt();
 		}while(bcd_max_aux<=0);
+		
+		print( clkcount() - old );
 
 		int i = k;
 		while(i < 1836311903){

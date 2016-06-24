@@ -62,6 +62,8 @@ extern void LCDclr(void);
 extern void LCDtopLine(void);
 extern void LCDbotLine(void);
 
+int clkcount(void);
+
 
 extern void DSP7SEGput(int MSD, int MSdot, int lsd, int lsdot);
 extern int  KBDget(void);

@@ -19,10 +19,14 @@ int main(void) {
 	k=0;
 
 	while(k < MAXINT){
+
+		int old = clkcount();
+   
 		do{
 			bcd_max_aux = bcdWSt();
 		}while(bcd_max_aux<=0);
 		
+		print( clkcount() - old );
 
 		unsigned int i, l , t;
 
