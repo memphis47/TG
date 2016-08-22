@@ -14,7 +14,6 @@ int main(void) {
 		j = 0;
 		while(k < MAXINT){
 			int i = k;
-			int old = clkcount();
 			while(i < 1836311903){
 				int divisor = 2;
 				int ehPrimo = 1;		/* Verificador de primo */
@@ -35,7 +34,7 @@ int main(void) {
 			}
 			print(j);
 			print(10);
-			print( clkcount() - old );
+			print( clkcount() );
 			k++;
 		}
 		cicle++;

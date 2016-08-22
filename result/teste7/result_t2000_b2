@@ -1,0 +1,4 @@
+/home/memphis/TG/vhdl/bufferCom.vhd:62:9:@483295ns:(assertion error): BCD_write[00000001]
+/home/memphis/TG/vhdl/bufferCom.vhd:72:9:@483490ns:(assertion error): BCD_read [00000001]
+/home/memphis/TG/vhdl/bufferCom.vhd:62:9:@1925275ns:(assertion error): BCD_write[00000001]
+/home/memphis/TG/tb_cmips:info: simulation stopped by --stop-time

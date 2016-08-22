@@ -19,13 +19,13 @@ do
 	# continue until $n equals 256
 	mkdir -p "./result/teste$testeFolder/" &&
 	mkdir -p "./result/teste$testeFolder/output" &&
-	if [ $testeFolder -ge 5 ]
+	if [ $testeFolder -ge 5 ] && [ $testeFolder -lt 7 ]
 	then
 		filename1000="./result/teste$testeFolder/result_t1000_b$n"
 		output1000="./result/teste$testeFolder/output/output_t1000_b$n"
 		./bin/run.sh -v pipe.sav -u u -t 1000 -n 1>"$output1000" 2>"$filename1000"
 	else
-		while [ $n -le $4 ]
+		while [ $n -le $4 ] || [ $n == 7 ]
 		do
 			echo "BCD $n"
 			filename100="./result/teste$testeFolder/result_t100_b$n" 
@@ -45,8 +45,8 @@ do
 			#./bin/run.sh -v pipe.sav -u u -t 100 -n 1>"$output100" 2>"$filename100" &&
 			#./bin/run.sh -v pipe.sav -u u -t 200 -n 1>"$output200" 2>"$filename200" &&
 			#./bin/run.sh -v pipe.sav -u u -t 300 -n 1>"$output300" 2>"$filename300" &&	
-			./bin/run.sh -v pipe.sav -u u -t 500 -n 1>"$output500" 2>"$filename500" &&	
-			#./bin/run.sh -v pipe.sav -u u -t 2000 -n 1>"$output2000" 2>"$filename2000" &&	
+			#./bin/run.sh -v pipe.sav -u u -t 500 -n 1>"$output500" 2>"$filename500" &&	
+			./bin/run.sh -v pipe.sav -u u -t 2000 -n 1>"$output2000" 2>"$filename2000" &&	
 			n=$(( n*2 ))	 # increments $n
 		done
 	fi

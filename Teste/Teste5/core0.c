@@ -13,6 +13,7 @@ int main(void) {
 
     int j,k,cicle;
 
+    cicle = 0;
 	
 
 	while(cicle < 3 ){
@@ -25,8 +26,6 @@ int main(void) {
 
 			i = 1;
 			j = 0;
-
-			int old = clkcount();
 			for (l = 1; l <= k; l++)
 			{
 				t = i + j;
@@ -35,7 +34,7 @@ int main(void) {
 			}
 			print(j);
 			print(10);
-			print( clkcount() - old );
+			print( clkcount() );
 
 			k++;
 		}

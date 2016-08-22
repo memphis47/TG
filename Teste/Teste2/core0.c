@@ -36,17 +36,14 @@ int main(void) {
 	volatile unsigned int bcd_max_aux;
 	j = 0;
 	while(k < MAXINT){
-	    int old = clkcount();
    
 		do{
 			bcd_max_aux = bcdWSt();
 		}while(bcd_max_aux<=0);
 		
-		print( clkcount() - old );
 
 		int i = k;
 		while(i < 1836311903){
-			print(i);
 			int divisor = 2;
 			int ehPrimo = 1;		/* Verificador de primo */
 
@@ -65,7 +62,6 @@ int main(void) {
 			i++;
 		}
 
-		print(j);
 		bcdWWr(j);
 		k++;
 	}

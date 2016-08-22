@@ -27,12 +27,15 @@ int main(void) {
 
 	while(k < MAXINT){
 		int bcd_max_aux;
+		
+		int old = clkcount();
 		do{
         	bcd_max_aux =(int) bcdRSt();
         	//print(12);
 			//print(bcd_max_aux);
 			//print(13);
 		}while(bcd_max_aux == 0);
+		print( clkcount() - old );
 
 		print(15);
         received = bcdRRd();
