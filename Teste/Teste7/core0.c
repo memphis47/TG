@@ -27,8 +27,6 @@ int main(void) {
 		print(temp);
 		
 		print(temp);
-		print(1);
-		print(1);		
 		cmips_delay(LCD_delay_30us * temp);
 		print(1);
 		do{

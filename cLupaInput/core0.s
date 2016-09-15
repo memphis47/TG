@@ -12,90 +12,108 @@
 	.ent	main
 	.type	main, @function
 main:
-	.frame	$sp,40,$31		# vars= 8, regs= 4/0, args= 16, gp= 0
-	.mask	0x80070000,-4
+	.frame	$sp,40,$31		# vars= 0, regs= 6/0, args= 16, gp= 0
+	.mask	0x801f0000,-4
 	.fmask	0x00000000,0
 	.set	noreorder
 	.set	nomacro
 	addiu	$sp,$sp,-40
 	sw	$31,36($sp)
-	sw	$18,32($sp)
-	sw	$17,28($sp)
-	sw	$16,24($sp)
-	li	$17,311			# 0x137
-	li	$16,177			# 0xb1
-	andi	$4,$17,0xffff
+	sw	$20,32($sp)
+	sw	$19,28($sp)
+	sw	$18,24($sp)
+	sw	$17,20($sp)
+	sw	$16,16($sp)
+	li	$20,3			# 0x3
+	li	$16,1836253184			# 0x6d730000
+	ori	$16,$16,0xe55f
+	b	$L2
+	li	$19,45			# 0x2d
+
+$L13:
+	slt	$2,$3,3
+$L17:
+	bne	$2,$0,$L3
+	nop
+
+	srl	$5,$3,31
+	addu	$5,$5,$3
+	sra	$5,$5,1
+	slt	$2,$5,2
+	bne	$2,$0,$L4
+	li	$2,2			# 0x2
+
+$L5:
+	bne	$2,$0,1f
+	div	$0,$3,$2
+	break	7
+1:
+	mfhi	$4
+	beq	$4,$0,$L3
+	addiu	$2,$2,1
+
+	slt	$4,$5,$2
+	beq	$4,$0,$L5
+	nop
+
+$L4:
+	slt	$2,$17,$3
+	bne	$2,$0,$L11
+	nop
+
+$L3:
+	addiu	$3,$3,1
+	bne	$3,$16,$L17
+	slt	$2,$3,3
+
+	b	$L6
+	nop
+
+$L11:
+	move	$17,$3
 $L6:
-	sll	$2,$4,2
-	sll	$3,$4,4
-	addu	$2,$2,$3
-	sll	$3,$2,3
-	subu	$2,$3,$2
-	sll	$3,$2,5
-	addu	$2,$2,$3
-	addu	$2,$2,$4
-	sll	$2,$2,3
-	addu	$2,$2,$4
-	srl	$17,$17,16
-	addu	$17,$2,$17
 	jal	print
 	move	$4,$17
 
-	andi	$2,$16,0xffff
-	sll	$4,$2,4
-	sll	$2,$2,6
-	addu	$3,$4,$2
-	sll	$2,$3,4
-	subu	$2,$2,$3
-	sll	$3,$2,4
-	subu	$2,$3,$2
-	srl	$16,$16,16
-	addu	$16,$2,$16
 	jal	print
-	move	$4,$16
+	li	$4,10			# 0xa
 
-	andi	$18,$16,0x3f
-	jal	print
-	move	$4,$18
+	jal	clkcount
+	addiu	$18,$18,1
 
 	jal	print
-	move	$4,$18
+	move	$4,$2
 
-	jal	print
-	li	$4,1			# 0x1
-
-	jal	print
-	li	$4,1			# 0x1
-
-	sll	$4,$18,3
-	sll	$2,$18,5
-	subu	$2,$2,$4
-	addu	$2,$2,$18
-	sll	$4,$2,4
-	jal	cmips_delay
-	subu	$4,$4,$2
-
-	jal	print
-	li	$4,1			# 0x1
-
-$L2:
-	jal	bcdWSt
+	beq	$18,$19,$L8
 	nop
 
-	sw	$2,16($sp)
-	lw	$2,16($sp)
-	nop
-	beq	$2,$0,$L2
-	nop
-
-	jal	print
-	li	$4,1			# 0x1
-
-	jal	bcdWWr
-	li	$4,1			# 0x1
+$L10:
+	slt	$2,$18,$16
+	bne	$2,$0,$L13
+	move	$3,$18
 
 	b	$L6
-	andi	$4,$17,0xffff
+	nop
+
+$L8:
+	addiu	$20,$20,-1
+	beq	$20,$0,$L9
+	move	$2,$0
+
+$L2:
+	move	$18,$0
+	b	$L10
+	move	$17,$0
+
+$L9:
+	lw	$31,36($sp)
+	lw	$20,32($sp)
+	lw	$19,28($sp)
+	lw	$18,24($sp)
+	lw	$17,20($sp)
+	lw	$16,16($sp)
+	j	$31
+	addiu	$sp,$sp,40
 
 	.set	macro
 	.set	reorder

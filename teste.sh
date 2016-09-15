@@ -21,9 +21,9 @@ do
 	mkdir -p "./result/teste$testeFolder/output" &&
 	if [ $testeFolder -ge 5 ] && [ $testeFolder -lt 7 ]
 	then
-		filename1000="./result/teste$testeFolder/result_t1000_b$n"
-		output1000="./result/teste$testeFolder/output/output_t1000_b$n"
-		./bin/run.sh -v pipe.sav -u u -t 1000 -n 1>"$output1000" 2>"$filename1000"
+		filename10000="./result/teste$testeFolder/result_t10000_b$n"
+		output10000="./result/teste$testeFolder/output/output_t10000_b$n"
+		./bin/run.sh -v pipe.sav -u u -t 10000 -n 1>"$output10000" 2>"$filename10000"
 	else
 		while [ $n -le $4 ] || [ $n == 7 ]
 		do
