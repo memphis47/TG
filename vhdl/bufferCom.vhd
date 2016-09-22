@@ -13,7 +13,7 @@ package p_cb is
 
 --  constant t_clock_period : time := 50 ns; -- trocado por CLOCK_PER de p_WIRES
 
-  constant NUM_WORDS_CB   : integer := 2;  -- Height of CircularBuffer
+  constant NUM_WORDS_CB   : integer := 256;  -- Height of CircularBuffer
   constant NUM_LINES_ADDR : natural := log2_ceil(NUM_WORDS_CB);
   constant SIZE_WORDS_CB  : integer := 32; -- Width of each word in CircularBuffer
  

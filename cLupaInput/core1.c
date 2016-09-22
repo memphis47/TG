@@ -1,43 +1,31 @@
 #include "../include/cMIPS.h"
 #include "cLupa.h"
+#define RAND_MAX 60
+#define LCD_delay_30us   750/4     //  30us / 20ns
 
-static int const MAXINT = 312;
-
-//TESTE2 CORE1
-int fibonacci(int n) {
-	unsigned int i, j, k, t;
-
-	i = 1;
-	j = 0;
-
-	for (k = 1; k <= n; k++)
-	{
-		t = i + j;
-		i = j;
-		j = t;
-	}
-	return j;
-}
 
 int main(void) {
 
-	int received,k;
+	int received;
+	unsigned int temp;
+	unsigned int m_w = 168;    /* must not be zero, nor 0x464fffff */
+	unsigned int m_z = 311; 
 
-	k = 0 ;
-
-	while(k < MAXINT){
+	while(1){
 		int bcd_max_aux;
 		do{
         	bcd_max_aux =(int) bcdRSt();
-        	//print(12);
-			//print(bcd_max_aux);
-			//print(13);
 		}while(bcd_max_aux == 0);
 
-		print(15);
         received = bcdRRd();
-		int fib = fibonacci(received);
-		k++;
+        //print(received);
+
+        m_z = 36969 * (m_z & 65535) + (m_z >> 16);
+		m_w = 18000 * (m_w & 65535) + (m_w >> 16);
+		temp =  ((m_z << 16) + m_w) & 63;
+
+		print(temp);
+		cmips_delay(LCD_delay_30us * temp);
 	}
 
 	return 0;

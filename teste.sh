@@ -33,12 +33,14 @@ do
 			filename300="./result/teste$testeFolder/result_t300_b$n"
 			filename500="./result/teste$testeFolder/result_t500_b$n"
 			filename2000="./result/teste$testeFolder/result_t2000_b$n"
+			filename20000="./result/teste$testeFolder/result_t20000_b$n"
 
 			output100="./result/teste$testeFolder/output/output_t100_b$n"
 			output200="./result/teste$testeFolder/output/output_t200_b$n"
 			output300="./result/teste$testeFolder/output/output_t300_b$n"
 			output500="./result/teste$testeFolder/output/output_t500_b$n"
 			output2000="./result/teste$testeFolder/output/output_t2000_b$n"
+			output20000="./result/teste$testeFolder/output/output_t20000_b$n"
 			
 
 			cp ./Teste/testes/$n/*.vhd ./vhdl/ &&
@@ -46,7 +48,7 @@ do
 			#./bin/run.sh -v pipe.sav -u u -t 200 -n 1>"$output200" 2>"$filename200" &&
 			#./bin/run.sh -v pipe.sav -u u -t 300 -n 1>"$output300" 2>"$filename300" &&	
 			#./bin/run.sh -v pipe.sav -u u -t 500 -n 1>"$output500" 2>"$filename500" &&	
-			./bin/run.sh -v pipe.sav -u u -t 2000 -n 1>"$output2000" 2>"$filename2000" &&	
+			./bin/run.sh -v pipe.sav -u u -t 20000 -n 1>"$output20000" 2>"$filename20000" &&	
 			n=$(( n*2 ))	 # increments $n
 		done
 	fi
