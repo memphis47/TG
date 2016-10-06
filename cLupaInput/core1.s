@@ -22,8 +22,8 @@ main:
 	sw	$18,24($sp)
 	sw	$17,20($sp)
 	sw	$16,16($sp)
-	li	$17,311			# 0x137
-	li	$16,168			# 0xa8
+	li	$18,311			# 0x137
+	li	$17,101			# 0x65
 $L2:
 	jal	bcdRSt
 	nop
@@ -34,7 +34,7 @@ $L2:
 	jal	bcdRRd
 	nop
 
-	andi	$4,$17,0xffff
+	andi	$4,$18,0xffff
 	sll	$2,$4,2
 	sll	$3,$4,4
 	addu	$2,$2,$3
@@ -45,9 +45,9 @@ $L2:
 	addu	$2,$2,$4
 	sll	$2,$2,3
 	addu	$2,$2,$4
-	srl	$17,$17,16
-	addu	$17,$2,$17
-	andi	$2,$16,0xffff
+	srl	$18,$18,16
+	addu	$18,$2,$18
+	andi	$2,$17,0xffff
 	sll	$4,$2,4
 	sll	$2,$2,6
 	addu	$3,$4,$2
@@ -55,19 +55,31 @@ $L2:
 	subu	$2,$2,$3
 	sll	$3,$2,4
 	subu	$2,$3,$2
-	srl	$16,$16,16
-	addu	$16,$2,$16
-	andi	$18,$16,0x3f
-	jal	print
-	move	$4,$18
+	srl	$17,$17,16
+	addu	$17,$2,$17
+	andi	$16,$17,0x1f
+	sll	$2,$16,2
+	sll	$3,$16,4
+	subu	$3,$3,$2
+	subu	$3,$3,$16
+	sll	$2,$3,4
+	addu	$3,$3,$2
+	bne	$3,$0,$L7
+	sll	$2,$16,2
 
-	sll	$4,$18,2
-	sll	$2,$18,4
-	subu	$2,$2,$4
-	subu	$2,$2,$18
-	sll	$4,$2,4
+	li	$16,1			# 0x1
+	sll	$2,$16,2
+$L7:
+	sll	$3,$16,4
+	subu	$2,$3,$2
+	subu	$2,$2,$16
+	sll	$16,$2,4
+	addu	$16,$2,$16
+	jal	print
+	move	$4,$16
+
 	jal	cmips_delay
-	addu	$4,$2,$4
+	move	$4,$16
 
 	b	$L2
 	nop
