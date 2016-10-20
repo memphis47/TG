@@ -23,7 +23,7 @@ int main(void) {
 
         m_z = 36969 * (m_z & 65535) + (m_z >> 16);
 		m_w = 18000 * (m_w & 65535) + (m_w >> 16);
-		temp =  ((m_z << 16) + m_w) & 63;
+		temp =  ((m_z << 16) + m_w) & 255;
 
 		if((LCD_delay_30us * temp) ==  0)
 			temp = 1;

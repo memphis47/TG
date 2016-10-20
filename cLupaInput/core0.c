@@ -23,7 +23,7 @@ int main(void) {
 		}while(bcd_max_aux <=  0);
 		m_z = 36969 * (m_z & 65535) + (m_z >> 16);
 		m_w = 18000 * (m_w & 65535) + (m_w >> 16);
-		temp =  ((m_z << 16) + m_w) & 63;
+		temp =  ((m_z << 16) + m_w) & 255;
 		
 		cmips_delay(LCD_delay_30us * temp);
 		
